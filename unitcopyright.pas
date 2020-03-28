@@ -36,6 +36,7 @@ type
   TfmCopyright = class(TForm)
     imLogo: TImage;
     imImagecopyright: TImage;
+    lbCopyrightWeb: TLabel;
     lbOK: TLabel;
     lbCopyrightDesc: TLabel;
     lbCopyrightAuthor2: TLabel;
@@ -46,7 +47,7 @@ type
     procedure FormCreate(Sender: TObject);
     procedure imLogoClick(Sender: TObject);
     procedure lbCopyrighPoweredClick(Sender: TObject);
-    procedure lbCopyrightSiteClick(Sender: TObject);
+    procedure lbCopyrightWebClick(Sender: TObject);
     procedure lbOKClick(Sender: TObject);
   private
 
@@ -93,9 +94,9 @@ begin
   OpenURL('https://firebirdsql.org/');
 end;
 
-procedure TfmCopyright.lbCopyrightSiteClick(Sender: TObject);
+procedure TfmCopyright.lbCopyrightWebClick(Sender: TObject);
 begin
-  OpenURL('https://sites.google.com/view/sqlnotex/');
+  OpenURL('https://github.com/maxnd/fbnotex/wiki');
 end;
 
 procedure TfmCopyright.lbOKClick(Sender: TObject);

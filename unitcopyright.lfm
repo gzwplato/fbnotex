@@ -1048,4 +1048,17 @@ object fmCopyright: TfmCopyright
     Transparent = False
     OnClick = lbOKClick
   end
+  object lbCopyrightWeb: TLabel
+    Cursor = crHandPoint
+    Left = 160
+    Height = 16
+    Top = 118
+    Width = 179
+    Caption = 'Visit the website of fbNotex'
+    Font.Color = clGreen
+    Font.Style = [fsBold, fsUnderline]
+    ParentColor = False
+    ParentFont = False
+    OnClick = lbCopyrightWebClick
+  end
 end

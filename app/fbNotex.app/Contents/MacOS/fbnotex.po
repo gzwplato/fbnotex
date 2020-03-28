@@ -84,6 +84,10 @@ msgstr ""
 msgid "fbNotex 1.0.0.0"
 msgstr ""
 
+#: tfmcopyright.lbcopyrightweb.caption
+msgid "Visit the website of fbNotex"
+msgstr ""
+
 #: tfmcopyright.lbok.caption
 msgctxt "tfmcopyright.lbok.caption"
 msgid "OK"
