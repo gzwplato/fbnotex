@@ -1130,7 +1130,7 @@ begin
   else if ((zqTasks.FieldByName('START_DATE').IsNull = False) and
     (zqTasks.FieldByName('START_DATE').AsDateTime <= Date)) then
   begin
-    grTasks.canvas.Font.Color := clBlue;
+    grTasks.canvas.Font.Color := clSkyBlue;
   end;
   grTasks.DefaultDrawColumnCell(Rect, DataCol, Column, State);
 end;
