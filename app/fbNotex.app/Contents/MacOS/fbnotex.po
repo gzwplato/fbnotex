@@ -81,7 +81,7 @@ msgid "A free software to manage notes and documents"
 msgstr ""
 
 #: tfmcopyright.lbcopyrightname.caption
-msgid "fbNotex 1.0.0.0"
+msgid "fbNotex 1.1.0.0"
 msgstr ""
 
 #: tfmcopyright.lbcopyrightweb.caption
@@ -307,12 +307,12 @@ msgstr ""
 
 #: tfmmain.mifbcopyright.caption
 msgctxt "tfmmain.mifbcopyright.caption"
-msgid "Copyright"
+msgid "About fbNotex..."
 msgstr ""
 
 #: tfmmain.mifbmanual.caption
 msgctxt "tfmmain.mifbmanual.caption"
-msgid "Manual"
+msgid "User manual"
 msgstr ""
 
 #: tfmmain.mifbnotex.caption
@@ -334,10 +334,6 @@ msgstr ""
 
 #: tfmmain.mifileimport.caption
 msgid "Import notes in current section"
-msgstr ""
-
-#: tfmmain.mifilequit.caption
-msgid "Quit"
 msgstr ""
 
 #: tfmmain.mifilerefresh.caption
@@ -635,6 +631,10 @@ msgstr ""
 msgid "Compact database"
 msgstr ""
 
+#: tfmmain.mitoolsfullscreen.caption
+msgid "Full screen"
+msgstr ""
+
 #: tfmmain.mitoolsoptions.caption
 msgctxt "tfmmain.mitoolsoptions.caption"
 msgid "Options"
@@ -830,8 +830,23 @@ msgctxt "tfmoptions.bnclose.caption"
 msgid "OK"
 msgstr ""
 
-#: tfmoptions.bnstfontcolor.caption
+#: tfmoptions.bnstfontcolordef.caption
+msgctxt "tfmoptions.bnstfontcolordef.caption"
+msgid "Default colors"
+msgstr ""
+
+#: tfmoptions.bnstfontcolordef1.caption
+msgid "Highlight color"
+msgstr ""
+
+#: tfmoptions.bnstfontcolormod.caption
+msgctxt "tfmoptions.bnstfontcolormod.caption"
 msgid "Font color"
+msgstr ""
+
+#: tfmoptions.bnstmarkcolormod.caption
+msgctxt "tfmoptions.bnstmarkcolormod.caption"
+msgid "Headings and markers color"
 msgstr ""
 
 #: tfmoptions.caption

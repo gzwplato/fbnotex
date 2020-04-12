@@ -3,7 +3,7 @@
 {"hash":48,"name":"tfmoptions.cbstfonts.text","sourcebytes":[48],"value":"0"},
 {"hash":834,"name":"tfmoptions.edstsize.text","sourcebytes":[49,50],"value":"12"},
 {"hash":106165763,"name":"tfmoptions.lbstsize.caption","sourcebytes":[70,111,110,116,32,115,105,122,101,32,111,102,32,116,104,101,32,110,111,116,101,115],"value":"Font size of the notes"},
-{"hash":107910450,"name":"tfmoptions.bnstfontcolor.caption","sourcebytes":[70,111,110,116,32,99,111,108,111,114],"value":"Font color"},
+{"hash":107910450,"name":"tfmoptions.bnstfontcolormod.caption","sourcebytes":[70,111,110,116,32,99,111,108,111,114],"value":"Font color"},
 {"hash":19726275,"name":"tfmoptions.lnstfonts.caption","sourcebytes":[70,111,110,116,32,110,97,109,101,32,111,102,32,116,104,101,32,110,111,116,101,115,32,97,110,100,32,111,102,32,116,104,101,32,116,105,116,108,101,115],"value":"Font name of the notes and of the titles"},
 {"hash":159557108,"name":"tfmoptions.edserver.text","sourcebytes":[108,111,99,97,108,104,111,115,116],"value":"localhost"},
 {"hash":94149826,"name":"tfmoptions.lbserver.caption","sourcebytes":[83,101,114,118,101,114],"value":"Server"},
@@ -24,5 +24,8 @@
 {"hash":45,"name":"tfmoptions.edstsizeless.caption","sourcebytes":[45],"value":"-"},
 {"hash":43,"name":"tfmoptions.edstsizetitlesplus.caption","sourcebytes":[43],"value":"+"},
 {"hash":45,"name":"tfmoptions.edstsizetitlesless.caption","sourcebytes":[45],"value":"-"},
+{"hash":151001474,"name":"tfmoptions.bnstmarkcolormod.caption","sourcebytes":[72,101,97,100,105,110,103,115,32,97,110,100,32,109,97,114,107,101,114,115,32,99,111,108,111,114],"value":"Headings and markers color"},
+{"hash":225374547,"name":"tfmoptions.bnstfontcolordef.caption","sourcebytes":[68,101,102,97,117,108,116,32,99,111,108,111,114,115],"value":"Default colors"},
+{"hash":194835042,"name":"tfmoptions.bnstfontcolordef1.caption","sourcebytes":[72,105,103,104,108,105,103,104,116,32,99,111,108,111,114],"value":"Highlight color"},
 {"hash":256115346,"name":"tfmoptions.cdcolordialog.title","sourcebytes":[83,101,108,101,99,116,32,97,32,99,111,108,111,114],"value":"Select a color"}
 ]}

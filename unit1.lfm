@@ -1,7 +1,7 @@
 object fmMain: TfmMain
-  Left = 388
+  Left = 428
   Height = 754
-  Top = 165
+  Top = 162
   Width = 1405
   ActiveControl = edPassword
   AllowDropFiles = True
@@ -2081,8 +2081,7 @@ object fmMain: TfmMain
   OnCreate = FormCreate
   OnDropFiles = FormDropFiles
   OnKeyDown = FormKeyDown
-  OnResize = FormResize
-  LCLVersion = '2.0.6.0'
+  LCLVersion = '2.1.0.0'
   object pnLogin: TPanel
     Left = 514
     Height = 416
@@ -2090,8 +2089,8 @@ object fmMain: TfmMain
     Width = 290
     BevelOuter = bvNone
     BorderStyle = bsSingle
-    ClientHeight = 416
-    ClientWidth = 290
+    ClientHeight = 414
+    ClientWidth = 288
     ParentColor = False
     TabOrder = 2
     object ilLogo: TImage
@@ -2941,7 +2940,7 @@ object fmMain: TfmMain
     end
     object edUserName: TEdit
       Left = 24
-      Height = 21
+      Height = 22
       Top = 219
       Width = 238
       TabOrder = 0
@@ -2965,7 +2964,7 @@ object fmMain: TfmMain
     end
     object edPassword: TEdit
       Left = 24
-      Height = 21
+      Height = 22
       Top = 283
       Width = 238
       EchoMode = emPassword
@@ -3041,12 +3040,12 @@ object fmMain: TfmMain
   end
   object pnStatusBar: TPanel
     Left = 0
-    Height = 26
-    Top = 728
+    Height = 27
+    Top = 727
     Width = 1405
     Align = alBottom
     BevelOuter = bvNone
-    ClientHeight = 26
+    ClientHeight = 27
     ClientWidth = 1405
     TabOrder = 0
     object lbInfo: TLabel
@@ -3079,33 +3078,34 @@ object fmMain: TfmMain
   end
   object pnMain: TPanel
     Left = 0
-    Height = 728
-    Top = 0
+    Height = 717
+    Top = 10
     Width = 1405
     Align = alClient
+    BorderSpacing.Top = 10
     BevelOuter = bvNone
-    ClientHeight = 728
+    ClientHeight = 717
     ClientWidth = 1405
     TabOrder = 1
     object pnLeft: TPanel
       Left = 0
-      Height = 473
+      Height = 462
       Top = 0
       Width = 466
       Align = alLeft
       BevelOuter = bvNone
-      ClientHeight = 473
+      ClientHeight = 462
       ClientWidth = 466
       TabOrder = 0
       object pnNotebook_Sections: TPanel
         Left = 6
-        Height = 473
+        Height = 462
         Top = 0
         Width = 225
         Align = alLeft
         BorderSpacing.Left = 6
         BevelOuter = bvNone
-        ClientHeight = 473
+        ClientHeight = 462
         ClientWidth = 225
         TabOrder = 0
         object grNotebooks: TDBGrid
@@ -3127,6 +3127,7 @@ object fmMain: TfmMain
           FixedCols = 0
           Options = [dgEditing, dgTitles, dgColumnResize, dgColLines, dgTabs, dgAlwaysShowSelection, dgCancelOnExit, dgDisableInsert]
           PopupMenu = pmNotebooks
+          ReadOnly = True
           Scrollbars = ssAutoVertical
           TabOrder = 0
           TitleFont.Style = [fsBold]
@@ -3144,7 +3145,7 @@ object fmMain: TfmMain
         end
         object grSections: TDBGrid
           Left = 0
-          Height = 272
+          Height = 261
           Top = 201
           Width = 225
           Align = alClient
@@ -3161,6 +3162,7 @@ object fmMain: TfmMain
           FixedCols = 0
           Options = [dgEditing, dgTitles, dgColumnResize, dgColLines, dgTabs, dgAlwaysShowSelection, dgCancelOnExit, dgDisableInsert]
           PopupMenu = pmSections
+          ReadOnly = True
           Scrollbars = ssAutoVertical
           TabOrder = 2
           TitleFont.Style = [fsBold]
@@ -3170,13 +3172,13 @@ object fmMain: TfmMain
       end
       object spNotebooks_Sections: TSplitter
         Left = 231
-        Height = 473
+        Height = 462
         Top = 0
         Width = 5
       end
       object grNotes: TDBGrid
         Left = 236
-        Height = 473
+        Height = 462
         Top = 0
         Width = 230
         Align = alClient
@@ -3193,6 +3195,7 @@ object fmMain: TfmMain
         FixedCols = 0
         Options = [dgEditing, dgTitles, dgColumnResize, dgColLines, dgTabs, dgAlwaysShowSelection, dgCancelOnExit, dgDisableInsert]
         PopupMenu = pmNotes
+        ReadOnly = True
         Scrollbars = ssAutoVertical
         TabOrder = 2
         TitleFont.Style = [fsBold]
@@ -3201,13 +3204,13 @@ object fmMain: TfmMain
     end
     object pnRight: TPanel
       Left = 1045
-      Height = 473
+      Height = 462
       Top = 0
       Width = 360
       Align = alRight
       BorderSpacing.Left = 6
       BevelOuter = bvNone
-      ClientHeight = 473
+      ClientHeight = 462
       ClientWidth = 360
       TabOrder = 1
       object grAttachments: TDBGrid
@@ -3249,7 +3252,7 @@ object fmMain: TfmMain
       object grLinks: TDBGrid
         Left = 0
         Height = 168
-        Top = 305
+        Top = 294
         Width = 360
         Align = alBottom
         AutoEdit = False
@@ -3281,7 +3284,7 @@ object fmMain: TfmMain
         Cursor = crVSplit
         Left = 0
         Height = 5
-        Top = 300
+        Top = 289
         Width = 360
         Align = alBottom
         Beveled = True
@@ -3289,7 +3292,7 @@ object fmMain: TfmMain
       end
       object grTags: TDBGrid
         Left = 0
-        Height = 127
+        Height = 116
         Top = 173
         Width = 360
         Align = alClient
@@ -3315,7 +3318,7 @@ object fmMain: TfmMain
     object pnBottom: TPanel
       Left = 0
       Height = 250
-      Top = 478
+      Top = 467
       Width = 1405
       Align = alBottom
       BevelOuter = bvNone
@@ -3469,7 +3472,7 @@ object fmMain: TfmMain
       Cursor = crVSplit
       Left = 0
       Height = 5
-      Top = 473
+      Top = 462
       Width = 1405
       Align = alBottom
       ResizeAnchor = akBottom
@@ -3477,7 +3480,7 @@ object fmMain: TfmMain
     end
     object pcPageControl: TPageControl
       Left = 471
-      Height = 473
+      Height = 462
       Top = 0
       Width = 563
       ActivePage = tsNotes
@@ -3486,55 +3489,55 @@ object fmMain: TfmMain
       TabOrder = 4
       object tsNotes: TTabSheet
         Caption = 'Notes'
-        ClientHeight = 443
+        ClientHeight = 432
         ClientWidth = 557
         object pnText: TPanel
           Left = 0
-          Height = 358
+          Height = 347
           Top = 85
           Width = 551
           Align = alClient
           BorderSpacing.Right = 6
           BevelOuter = bvNone
-          ClientHeight = 358
+          ClientHeight = 347
           ClientWidth = 551
           ParentColor = False
           TabOrder = 1
           object dbText: TMemo
-            Left = 215
-            Height = 358
+            Left = 225
+            Height = 347
             Top = 0
-            Width = 336
+            Width = 326
             Align = alClient
-            BorderSpacing.Left = 5
+            BorderSpacing.Left = 10
             BorderStyle = bsNone
             Font.Height = -16
             Lines.Strings = (            )
+            OnChange = dbTextChange
             OnKeyDown = dbTextKeyDown
             OnKeyUp = dbTextKeyUp
-            OnMouseUp = dbTextMouseUp
             ParentFont = False
             ScrollBars = ssAutoVertical
             TabOrder = 0
             WantTabs = True
           end
           object spTitles: TSplitter
-            Left = 205
-            Height = 358
+            Left = 210
+            Height = 347
             Top = 0
             Width = 5
           end
           object sgTitles: TStringGrid
             Cursor = crHandPoint
             Left = 0
-            Height = 358
+            Height = 347
             Top = 0
             Width = 200
             Align = alLeft
             AutoEdit = False
-            BorderSpacing.Right = 5
+            BorderSpacing.Right = 10
             BorderStyle = bsNone
-            Color = clBackground
+            Color = clForm
             ColCount = 1
             DefaultColWidth = 900
             ExtendedSelect = False
@@ -3549,7 +3552,6 @@ object fmMain: TfmMain
             RowCount = 0
             ScrollBars = ssAutoVertical
             TabOrder = 2
-            TitleFont.Height = -13
             TitleStyle = tsNative
             OnClick = sgTitlesClick
           end
@@ -3566,7 +3568,7 @@ object fmMain: TfmMain
           TabOrder = 0
           object dbTitle: TDBEdit
             Left = 104
-            Height = 21
+            Height = 22
             Top = 32
             Width = 442
             DataField = 'TITLE'
@@ -3589,7 +3591,7 @@ object fmMain: TfmMain
           end
           object dbID: TDBEdit
             Left = 11
-            Height = 21
+            Height = 22
             Top = 32
             Width = 80
             DataField = 'ID'
@@ -3614,11 +3616,11 @@ object fmMain: TfmMain
       end
       object tsTasks: TTabSheet
         Caption = 'Tasks'
-        ClientHeight = 443
+        ClientHeight = 432
         ClientWidth = 557
         object grTasks: TDBGrid
           Left = 10
-          Height = 201
+          Height = 190
           Top = 10
           Width = 537
           Align = alClient
@@ -3679,7 +3681,7 @@ object fmMain: TfmMain
         object pnTasks: TPanel
           Left = 0
           Height = 222
-          Top = 221
+          Top = 210
           Width = 557
           Align = alBottom
           BevelOuter = bvNone
@@ -3705,7 +3707,7 @@ object fmMain: TfmMain
     end
     object spRight: TSplitter
       Left = 1034
-      Height = 473
+      Height = 462
       Top = 0
       Width = 5
       Align = alRight
@@ -3713,7 +3715,7 @@ object fmMain: TfmMain
     end
     object spLeft: TSplitter
       Left = 466
-      Height = 473
+      Height = 462
       Top = 0
       Width = 5
     end
@@ -3854,14 +3856,14 @@ object fmMain: TfmMain
     object miFBNotex: TMenuItem
       Caption = 'fbNotex'
       object miFBCopyright: TMenuItem
-        Caption = 'Copyright'
+        Caption = 'About fbNotex...'
         OnClick = miFBCopyrightClick
       end
       object N27: TMenuItem
         Caption = '-'
       end
       object miFBManual: TMenuItem
-        Caption = 'Manual'
+        Caption = 'User manual'
         OnClick = miFBManualClick
       end
     end
@@ -3874,6 +3876,7 @@ object fmMain: TfmMain
       end
       object miFileUndo: TMenuItem
         Caption = 'Undo changes'
+        ShortCut = 12378
         OnClick = miFileUndoClick
       end
       object N10: TMenuItem
@@ -3902,14 +3905,6 @@ object fmMain: TfmMain
         Caption = 'Close database'
         ShortCut = 41041
         OnClick = miFileCloseClick
-      end
-      object N24: TMenuItem
-        Caption = '-'
-      end
-      object miFileQuit: TMenuItem
-        Caption = 'Quit'
-        ShortCut = 4177
-        OnClick = miFileQuitClick
       end
     end
     object miEdit: TMenuItem
@@ -3941,6 +3936,7 @@ object fmMain: TfmMain
       end
       object miEditOpenCurrWriter: TMenuItem
         Caption = 'Open note in Writer'
+        ShortCut = 12375
         OnClick = miEditOpenCurrWriterClick
       end
       object miEditOpenAllWriter: TMenuItem
@@ -4268,6 +4264,11 @@ object fmMain: TfmMain
         Caption = 'Show editor only'
         ShortCut = 4165
         OnClick = miToolsShowEditorClick
+      end
+      object miToolsFullScreen: TMenuItem
+        Caption = 'Full screen'
+        ShortCut = 36933
+        OnClick = miToolsFullScreenClick
       end
       object N23: TMenuItem
         Caption = '-'
@@ -5191,7 +5192,7 @@ object fmMain: TfmMain
     top = 419
   end
   object apfbNotex: TApplicationProperties
-    Title = 'sqlNotex'
+    Title = 'fbNotex'
     OnException = apfbNotexException
     left = 321
     top = 139

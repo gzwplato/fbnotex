@@ -86,7 +86,7 @@ msgstr "Un software libero per gestire note e documenti"
 
 #: tfmcopyright.lbcopyrightname.caption
 msgctxt "tfmcopyright.lbcopyrightname.caption"
-msgid "fbNotex 1.0.0.0"
+msgid "fbNotex 1.1.0.0"
 msgstr ""
 
 #: tfmcopyright.lbcopyrightweb.caption
@@ -314,12 +314,12 @@ msgstr "Riformatta"
 
 #: tfmmain.mifbcopyright.caption
 msgctxt "tfmmain.mifbcopyright.caption"
-msgid "Copyright"
-msgstr "Copyright"
+msgid "About fbNotex..."
+msgstr "Informazioni su fbNotex..."
 
 #: tfmmain.mifbmanual.caption
-msgid "Manual"
-msgstr "Manuale"
+msgid "User manual"
+msgstr "Manuale utente"
 
 #: tfmmain.mifbnotex.caption
 msgctxt "tfmmain.mifbnotex.caption"
@@ -341,10 +341,6 @@ msgstr "Esporta le note della sezione"
 #: tfmmain.mifileimport.caption
 msgid "Import notes in current section"
 msgstr "Importa le note nella sezione"
-
-#: tfmmain.mifilequit.caption
-msgid "Quit"
-msgstr "Esci"
 
 #: tfmmain.mifilerefresh.caption
 msgid "Refresh"
@@ -643,6 +639,10 @@ msgstr "Backup del database"
 msgid "Compact database"
 msgstr "Compatta il database"
 
+#: tfmmain.mitoolsfullscreen.caption
+msgid "Full screen"
+msgstr "Schermo intero"
+
 #: tfmmain.mitoolsoptions.caption
 msgctxt "tfmmain.mitoolsoptions.caption"
 msgid "Options"
@@ -657,7 +657,6 @@ msgid "Show editor only"
 msgstr "Mostra solo l'editor"
 
 #: tfmmain.odopendialog.title
-#| msgid "Open a file"
 msgid "Open one or more files"
 msgstr "Apri uno o più file"
 
@@ -839,9 +838,23 @@ msgctxt "tfmoptions.bnclose.caption"
 msgid "OK"
 msgstr ""
 
-#: tfmoptions.bnstfontcolor.caption
+#: tfmoptions.bnstfontcolordef.caption
+msgid "Default colors"
+msgstr "Colori standard"
+
+#: tfmoptions.bnstfontcolordef1.caption
+msgid "Highlight color"
+msgstr "Colore evidenziazione"
+
+#: tfmoptions.bnstfontcolormod.caption
+msgctxt "tfmoptions.bnstfontcolormod.caption"
 msgid "Font color"
-msgstr "Colore del font"
+msgstr "Colore font"
+
+#: tfmoptions.bnstmarkcolormod.caption
+msgctxt "tfmoptions.bnstmarkcolormod.caption"
+msgid "Headings and markers color"
+msgstr "Colore marcatori e intestazioni"
 
 #: tfmoptions.caption
 msgctxt "tfmoptions.caption"
@@ -926,7 +939,6 @@ msgid "Firebird library path"
 msgstr "Percorso libreria Firebird"
 
 #: tfmoptions.lbpath.caption
-#| msgid "Database path"
 msgid "Database file"
 msgstr "File del database"
 
@@ -939,7 +951,6 @@ msgid "Server"
 msgstr ""
 
 #: tfmoptions.lbstsize.caption
-#| msgid "Size"
 msgid "Font size of the notes"
 msgstr "Dimensione font note"
 
@@ -1133,7 +1144,6 @@ msgid "Attachment name contains"
 msgstr "Il nome dell'allegato contiene"
 
 #: unit1.find6
-#| msgid "SQL Where clause"
 msgctxt "unit1.find6"
 msgid "Activity name contains"
 msgstr "Il nome dell'attività contiene"
@@ -1144,7 +1154,6 @@ msgid "SQL Where clause"
 msgstr "Clausola SQL Where"
 
 #: unit1.msg001
-#| msgid "Data input or operation not correct."
 msgid "Data input or operation not correct. The error message is:"
 msgstr "I dati immessi o l'operazione svolta non sono corretti. Il messaggio di errore è:"
 
@@ -1157,12 +1166,10 @@ msgid "The value entered is not a valid ID."
 msgstr "Il valore immesso non è un ID valido."
 
 #: unit1.msg004
-#| msgid "No note is selected."
 msgid "No note has been selected."
 msgstr "Nessuna nota è stata selezionata."
 
 #: unit1.msg005
-#| msgid "Backup the database?"
 msgid "Backup the database"
 msgstr "Fare il backup del database"
 
@@ -1442,7 +1449,6 @@ msgid "Resources"
 msgstr "Risorse"
 
 #: unit9.msgfnd001
-#| msgid "ResourcesText not found."
 msgctxt "unit1.ts006unit9.msgfnd001"
 msgid "Text not found."
 msgstr "Il testo non è stato trovato."

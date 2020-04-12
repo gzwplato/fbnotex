@@ -27,7 +27,7 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, StdCtrls, ComCtrls,
-  ExtCtrls, LazUTF8;
+  ExtCtrls, LazUTF8, CocoaThemes;
 
 type
 
@@ -35,7 +35,10 @@ type
 
   TfmOptions = class(TForm)
     bnClose: TButton;
-    bnStFontColor: TButton;
+    bnStFontColorDef: TButton;
+    bnStFontColorDef1: TButton;
+    bnStFontColorMod: TButton;
+    bnStMarkColorMod: TButton;
     edStSizePlus: TButton;
     edStSizeLess: TButton;
     edStSizeTitlesPlus: TButton;
@@ -59,8 +62,11 @@ type
     lbStSize: TLabel;
     lbStSizeTitles: TLabel;
     lnStFonts: TLabel;
-    procedure bnStFontColorClick(Sender: TObject);
     procedure bnCloseClick(Sender: TObject);
+    procedure bnStFontColorDef1Click(Sender: TObject);
+    procedure bnStFontColorDefClick(Sender: TObject);
+    procedure bnStFontColorModClick(Sender: TObject);
+    procedure bnStMarkColorModClick(Sender: TObject);
     procedure cbStFontsChange(Sender: TObject);
     procedure edStSizeChange(Sender: TObject);
     procedure edStSizeLessClick(Sender: TObject);
@@ -203,13 +209,50 @@ begin
   end;
 end;
 
-procedure TfmOptions.bnStFontColorClick(Sender: TObject);
+procedure TfmOptions.bnStFontColorDefClick(Sender: TObject);
+begin
+  if IsPaintDark = True then
+  begin
+    fmMain.dbText.Font.Color := clWhite;
+  end
+  else
+  begin
+    fmMain.dbText.Font.Color := clDefault;
+  end;
+  fmMain.sgTitles.Font.Color := clDefault;
+  clMarker := clRed;
+  clHighlight := clGreen;
+  fmMain.FormatMarkers(True);
+end;
+
+procedure TfmOptions.bnStFontColorModClick(Sender: TObject);
 begin
   cdColorDialog.Color := fmMain.dbText.Font.Color;
   if cdColorDialog.Execute then
   begin
     fmMain.dbText.Font.Color := cdColorDialog.Color;
     fmMain.sgTitles.Font.Color := cdColorDialog.Color;
+    fmMain.FormatMarkers(True);
+  end;
+end;
+
+procedure TfmOptions.bnStMarkColorModClick(Sender: TObject);
+begin
+  cdColorDialog.Color := clMarker;
+  if cdColorDialog.Execute then
+  begin
+    clMarker := cdColorDialog.Color;
+    fmMain.FormatMarkers(True);
+  end;
+end;
+
+procedure TfmOptions.bnStFontColorDef1Click(Sender: TObject);
+begin
+  cdColorDialog.Color := clHighlight;
+  if cdColorDialog.Execute then
+  begin
+    clHighlight := cdColorDialog.Color;
+    fmMain.FormatMarkers(True);
   end;
 end;
 

@@ -1,12 +1,12 @@
 object fmOptions: TfmOptions
   Left = 664
-  Height = 458
-  Top = 274
+  Height = 504
+  Top = 273
   Width = 589
   BorderIcons = []
   BorderStyle = bsDialog
   Caption = 'Options'
-  ClientHeight = 458
+  ClientHeight = 504
   ClientWidth = 589
   FormStyle = fsStayOnTop
   OnClose = FormClose
@@ -27,32 +27,32 @@ object fmOptions: TfmOptions
     Text = '0'
   end
   object edStSize: TEdit
-    Left = 219
+    Left = 43
     Height = 21
     Top = 114
     Width = 50
     NumbersOnly = True
     OnChange = edStSizeChange
     ReadOnly = True
-    TabOrder = 2
+    TabOrder = 1
     Text = '12'
   end
   object lbStSize: TLabel
-    Left = 219
+    Left = 43
     Height = 16
     Top = 90
     Width = 131
     Caption = 'Font size of the notes'
     ParentColor = False
   end
-  object bnStFontColor: TButton
-    Left = 43
+  object bnStFontColorMod: TButton
+    Left = 336
     Height = 36
-    Top = 106
-    Width = 155
+    Top = 144
+    Width = 216
     Caption = 'Font color'
-    OnClick = bnStFontColorClick
-    TabOrder = 1
+    OnClick = bnStFontColorModClick
+    TabOrder = 8
   end
   object lnStFonts: TLabel
     Left = 43
@@ -65,15 +65,15 @@ object fmOptions: TfmOptions
   object edServer: TEdit
     Left = 43
     Height = 21
-    Top = 306
+    Top = 362
     Width = 149
-    TabOrder = 10
+    TabOrder = 13
     Text = 'localhost'
   end
   object lbServer: TLabel
     Left = 43
     Height = 16
-    Top = 284
+    Top = 340
     Width = 39
     Caption = 'Server'
     ParentColor = False
@@ -81,7 +81,7 @@ object fmOptions: TfmOptions
   object lbPath: TLabel
     Left = 219
     Height = 16
-    Top = 284
+    Top = 340
     Width = 79
     Caption = 'Database file'
     ParentColor = False
@@ -89,49 +89,49 @@ object fmOptions: TfmOptions
   object edPath: TEdit
     Left = 219
     Height = 21
-    Top = 306
+    Top = 362
     Width = 333
-    TabOrder = 11
+    TabOrder = 14
     Text = '/usr/share/sqlnotex-data/sqlNotex.fdb'
   end
   object bnClose: TButton
     Left = 477
     Height = 30
-    Top = 400
+    Top = 456
     Width = 75
     Caption = 'OK'
     OnClick = bnCloseClick
-    TabOrder = 14
+    TabOrder = 17
   end
   object edBackup: TEdit
     Left = 219
     Height = 21
-    Top = 360
+    Top = 416
     Width = 333
-    TabOrder = 13
+    TabOrder = 16
     Text = '/usr/share/sqlnotex-data/sqlNotex-backup.fdb'
   end
   object lbBackup: TLabel
     Left = 219
     Height = 16
-    Top = 338
+    Top = 394
     Width = 140
     Caption = 'Backup and restore file'
     ParentColor = False
   end
   object edStSizeTitles: TEdit
-    Left = 395
+    Left = 336
     Height = 21
     Top = 113
     Width = 50
     NumbersOnly = True
     OnChange = edStSizeTitlesChange
     ReadOnly = True
-    TabOrder = 5
+    TabOrder = 4
     Text = '10'
   end
   object lbStSizeTitles: TLabel
-    Left = 395
+    Left = 336
     Height = 16
     Top = 90
     Width = 127
@@ -141,16 +141,16 @@ object fmOptions: TfmOptions
   object edPort: TEdit
     Left = 43
     Height = 21
-    Top = 360
+    Top = 416
     Width = 149
     NumbersOnly = True
-    TabOrder = 12
+    TabOrder = 15
     Text = '3050'
   end
   object lbPort: TLabel
     Left = 43
     Height = 16
-    Top = 338
+    Top = 394
     Width = 25
     Caption = 'Port'
     ParentColor = False
@@ -158,7 +158,7 @@ object fmOptions: TfmOptions
   object lbFBgbakPath: TLabel
     Left = 43
     Height = 16
-    Top = 224
+    Top = 280
     Width = 61
     Caption = 'gbak path'
     ParentColor = False
@@ -166,62 +166,89 @@ object fmOptions: TfmOptions
   object edFBgbakPath: TEdit
     Left = 43
     Height = 21
-    Top = 246
+    Top = 302
     Width = 509
-    TabOrder = 9
+    TabOrder = 12
     Text = '/Library/Frameworks/firebird.framework/Versions/A/Resources/lib/libfbclient.dylib'
   end
   object edFBLibPath: TEdit
     Left = 43
     Height = 21
-    Top = 190
+    Top = 246
     Width = 509
-    TabOrder = 8
+    TabOrder = 11
     Text = '/Library/Frameworks/firebird.framework/Versions/A/Resources/lib/libfbclient.dylib'
   end
   object lbFBLibPath: TLabel
     Left = 43
     Height = 16
-    Top = 168
+    Top = 224
     Width = 119
     Caption = 'Firebird library path'
     ParentColor = False
   end
   object edStSizePlus: TButton
-    Left = 279
+    Left = 103
     Height = 21
     Top = 114
     Width = 24
     Caption = '+'
     OnClick = edStSizePlusClick
-    TabOrder = 3
+    TabOrder = 2
   end
   object edStSizeLess: TButton
-    Left = 307
+    Left = 131
     Height = 21
     Top = 114
     Width = 24
     Caption = '-'
     OnClick = edStSizeLessClick
-    TabOrder = 4
+    TabOrder = 3
   end
   object edStSizeTitlesPlus: TButton
-    Left = 455
+    Left = 396
     Height = 21
     Top = 113
     Width = 24
     Caption = '+'
     OnClick = edStSizeTitlesPlusClick
-    TabOrder = 6
+    TabOrder = 5
   end
   object edStSizeTitlesLess: TButton
-    Left = 483
+    Left = 424
     Height = 21
     Top = 113
     Width = 24
     Caption = '-'
     OnClick = edStSizeTitlesLessClick
+    TabOrder = 6
+  end
+  object bnStMarkColorMod: TButton
+    Left = 336
+    Height = 36
+    Top = 176
+    Width = 216
+    Caption = 'Headings and markers color'
+    OnClick = bnStMarkColorModClick
+    TabOrder = 10
+  end
+  object bnStFontColorDef: TButton
+    Left = 43
+    Height = 36
+    Top = 144
+    Width = 220
+    Caption = 'Default colors'
+    OnClick = bnStFontColorDefClick
     TabOrder = 7
+  end
+  object bnStFontColorDef1: TButton
+    Left = 43
+    Height = 36
+    Top = 176
+    Width = 220
+    Caption = 'Highlight color'
+    OnClick = bnStFontColorDef1Click
+    TabOrder = 9
   end
   object cdColorDialog: TColorDialog
     Title = 'Select a color'
@@ -249,6 +276,6 @@ object fmOptions: TfmOptions
       'ColorT=A4A0A0'
     )
     left = 344
-    top = 272
+    top = 328
   end
 end

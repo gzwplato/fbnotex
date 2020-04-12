@@ -22,6 +22,7 @@
 unit Unit1;
 
 {$mode objfpc}{$H+}
+{$modeswitch objectivec1}
 
 interface
 
@@ -29,7 +30,8 @@ uses
   Classes, SysUtils, DB, IBConnection, sqldb, Forms, Controls, Graphics,
   Dialogs, ExtCtrls, Menus, DBGrids, ComCtrls, DBCtrls, StdCtrls, Grids,
   ZConnection, ZDataset, ZSqlUpdate, LCLIntf, IniFiles, LazUTF8,
-  zipper, LazFileUtils, FileUtil, Clipbrd, process, DefaultTranslator, Unix;
+  zipper, LazFileUtils, FileUtil, Clipbrd, process, DefaultTranslator, Unix,
+  CocoaThemes, CocoaAll, CocoaTextEdits, CocoaUtils;
 
 type
 
@@ -86,6 +88,7 @@ type
     lbInfo: TLabel;
     lbTitle: TLabel;
     lbID: TLabel;
+    miToolsFullScreen: TMenuItem;
     miEditOpenAllWriter: TMenuItem;
     miEditOpenCurrWriter: TMenuItem;
     N15: TMenuItem;
@@ -115,7 +118,6 @@ type
     N25: TMenuItem;
     miEditOpenCurrWord: TMenuItem;
     miFileClose: TMenuItem;
-    N24: TMenuItem;
     miNotesShowAllTasks: TMenuItem;
     miEditPreview: TMenuItem;
     N23: TMenuItem;
@@ -198,7 +200,6 @@ type
     miNotes: TMenuItem;
     miSection: TMenuItem;
     miNotebooks: TMenuItem;
-    miFileQuit: TMenuItem;
     N1: TMenuItem;
     miFileSave: TMenuItem;
     miFile: TMenuItem;
@@ -378,10 +379,9 @@ type
     procedure apfbNotexException(Sender: TObject; E: Exception);
     procedure bnExitClick(Sender: TObject);
     procedure bnFindClick(Sender: TObject);
+    procedure dbTextChange(Sender: TObject);
     procedure dbTextKeyDown(Sender: TObject; var Key: word; Shift: TShiftState);
     procedure dbTextKeyUp(Sender: TObject; var Key: word; Shift: TShiftState);
-    procedure dbTextMouseUp(Sender: TObject; Button: TMouseButton;
-      Shift: TShiftState; X, Y: Integer);
     procedure dbTitleKeyDown(Sender: TObject; var Key: word; Shift: TShiftState);
     procedure dsNotesDataChange(Sender: TObject; Field: TField);
     procedure dsTasksDataChange(Sender: TObject; Field: TField);
@@ -391,7 +391,6 @@ type
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure FormDropFiles(Sender: TObject; const FileNames: array of string);
     procedure FormKeyDown(Sender: TObject; var Key: word; Shift: TShiftState);
-    procedure FormResize(Sender: TObject);
     procedure grAttachmentsDblClick(Sender: TObject);
     procedure grFindDblClick(Sender: TObject);
     procedure grFindKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
@@ -437,6 +436,7 @@ type
     procedure miSectionsMoveUpClick(Sender: TObject);
     procedure miToolsBackupClick(Sender: TObject);
     procedure miToolsCompactClick(Sender: TObject);
+    procedure miToolsFullScreenClick(Sender: TObject);
     procedure miToolsRestoreClick(Sender: TObject);
     procedure miToolsShowEditorClick(Sender: TObject);
     procedure miToolsOptionsClick(Sender: TObject);
@@ -444,7 +444,6 @@ type
     procedure sgTitlesClick(Sender: TObject);
     procedure StateChange(Sender: TObject);
     procedure FormCreate(Sender: TObject);
-    procedure miFileQuitClick(Sender: TObject);
     procedure miFileSaveClick(Sender: TObject);
     procedure miNotebooksCommentsClick(Sender: TObject);
     procedure miNotebooksDeleteClick(Sender: TObject);
@@ -505,7 +504,6 @@ type
     procedure zqTasksBeforeDelete(DataSet: TDataSet);
     procedure zqTasksBeforeInsert(DataSet: TDataSet);
   private
-    procedure CheckAndRunLink;
     function CleanXML(stXMLText: string): string;
     function ColorToHtml(clColor: TColor): string;
     procedure Connect;
@@ -515,7 +513,7 @@ type
     procedure Disconnect;
     function GetDbSize(stDatabase: String): String;
     function GetNotexTempDir: String;
-    procedure InsText(stText: string; iPos: integer);
+    procedure InsText(stText: string);
     function IsHeader(stLine: String): boolean;
     procedure SelectInsertFootnote;
     procedure RenumberFootnotes;
@@ -528,6 +526,7 @@ type
     procedure UpdateInfo;
   public
     procedure ListAndFormatTitle;
+    procedure FormatMarkers(blAll: boolean);
 
   end;
 
@@ -540,9 +539,13 @@ var
   blChangeIDSectionNote: SmallInt = -1;
   blChangedText: boolean = False;
   blLoadNotes: boolean = True;
+  blModNote: boolean = False;
   iLastNotebook: integer = 0;
   iLastSection: integer = 0;
   iLastNote: integer = 0;
+  clMarker: TColor = clRed;
+  clHighlight: TColor = clGreen;
+  clTaskGreen, clTaskBlue: TColor;
   myColor: TColor = TColor($76CF76);
 
 resourcestring
@@ -644,17 +647,11 @@ procedure TfmMain.FormCreate(Sender: TObject);
 var
   MyIni: TIniFile;
 begin
-  {$ifdef Linux}
-  {$endif}
-  {$ifdef Windows}
-  {$endif}
-  {$ifdef Darwin}
-    myHomeDir := GetUserDir + 'Library/Preferences/';
-    myConfigFile := 'fbnotex.plist';
-    stBackupFile := '/Users/' + GetUserDir + 'Data/fbNotex-backup.fdb';
-    stGBackDir := '/Library/Frameworks/firebird.framework/Versions/A/' +
-      'Resources/bin/gbak';
-  {$endif}
+  myHomeDir := GetUserDir + 'Library/Preferences/';
+  myConfigFile := 'fbnotex.plist';
+  stBackupFile := '/Users/' + GetUserDir + 'Data/fbNotex-backup.fdb';
+  stGBackDir := '/Library/Frameworks/firebird.framework/Versions/A/' +
+    'Resources/bin/gbak';
   if DirectoryExists(myHomeDir) = False then
   begin
     CreateDirUTF8(myHomeDir);
@@ -696,10 +693,22 @@ begin
       dbText.Font.Name := MyIni.ReadString('fbnotex', 'fontname', 'Helvetica');
       dbText.Font.Size := MyIni.ReadInteger('fbnotex', 'fontsize', 12);
       sgTitles.Font.Size := MyIni.ReadInteger('fbnotex', 'fonttitlessize', 12);
-      dbText.Font.Color := StringToColor(MyIni.ReadString('fbnotex',
-        'fontcolor', 'clDefault'));
+      if IsPaintDark = False then
+      begin
+        dbText.Font.Color := StringToColor(MyIni.ReadString('fbnotex',
+          'fontcolor', 'clDefault'));
+      end
+      else
+      begin
+        dbText.Font.Color := StringToColor(MyIni.ReadString('fbnotex',
+          'fontcolor', 'clWhite'));
+      end;
       sgTitles.Font.Name := dbText.Font.Name;
       sgTitles.Font.Color := dbText.Font.Color;
+      clMarker := StringToColor(MyIni.ReadString('fbnotex',
+        'marker', 'clRed'));
+      clHighlight := StringToColor(MyIni.ReadString('fbnotex',
+        'highlight', 'clGreen'));
       iLastNotebook := MyIni.ReadInteger('fbnotex', 'lastnotebook', 0);
       iLastSection := MyIni.ReadInteger('fbnotex', 'lastsection', 0);
       iLastNote := MyIni.ReadInteger('fbnotex', 'lastnote', 0);
@@ -729,6 +738,16 @@ begin
   grFind.SelectedColor := myColor;
   grFind.FocusRectVisible := False;
   sgTitles.FocusRectVisible := False;
+  if IsPaintDark = False then
+  begin
+    clTaskGreen := clGreen;
+    clTaskBlue := clBlue;
+  end
+  else
+  begin
+    clTaskGreen := clLime;
+    clTaskBlue := clSkyBlue;
+  end;
   if dateformat = 'en' then
   begin
     zqTasksSTART_DATE.DisplayFormat := 'dddd mmmm dd yyyy';
@@ -759,16 +778,19 @@ begin
     Add(find6);
     Add(find7);
   end;
-  cbFields.ItemIndex := 0;
+  cbFields.ItemIndex := 1;
 end;
 
 procedure TfmMain.FormClose(Sender: TObject; var CloseAction: TCloseAction);
 var
   MyIni: TIniFile;
 begin
-  SaveAll;
-  dbText.Clear;
-  Disconnect;
+  if zcConnection.Connected = True then
+  begin;
+    SaveAll;
+    dbText.Clear;
+    Disconnect;
+  end;
   try
     MyIni := TIniFile.Create(myHomeDir + myConfigFile);
     if fmMain.WindowState = wsMaximized then
@@ -794,6 +816,8 @@ begin
     MyIni.WriteInteger('fbnotex', 'fontsize', dbText.Font.Size);
     MyIni.WriteInteger('fbnotex', 'fonttitlessize', sgTitles.Font.Size);
     MyIni.WriteString('fbnotex', 'fontcolor', ColorToString(dbText.Font.Color));
+    MyIni.WriteString('fbnotex', 'marker', ColorToString(clMarker));
+    MyIni.WriteString('fbnotex', 'highlight', ColorToString(clHighlight));
     if iLastNotebook > 0 then
     begin
       MyIni.WriteInteger('fbnotex', 'lastnotebook', iLastNotebook);
@@ -822,6 +846,20 @@ begin
   fmOptions.edServer.Text := zcConnection.HostName;
   fmOptions.edPath.Text := zcConnection.Database;
   fmOptions.edBackup.Text := stBackupFile;
+  TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+    setContinuousSpellCheckingEnabled(True);
+  TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+    textContainer.setLineFragmentPadding(30);
+  TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+    setFocusRingType(1);
+  TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+    setAutomaticDashSubstitutionEnabled(True);
+  TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+    setAutomaticQuoteSubstitutionEnabled(True);
+  TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+    setSmartInsertDeleteEnabled(True);
+  TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+    setRichText(True);
 end;
 
 procedure TfmMain.FormDropFiles(Sender: TObject; const FileNames: array of string);
@@ -845,7 +883,7 @@ procedure TfmMain.FormKeyDown(Sender: TObject; var Key: word; Shift: TShiftState
 begin
   if pnMain.Visible = False then
     Abort;
-  if ((key > 47) and (key < 58) and (Shift = [ssMeta, ssShift])) then
+  if ((key > 47) and (key < 58) and (Shift = [ssMeta, ssAlt])) then
   begin
     if zqNotesID.AsString <> '' then
     begin;
@@ -887,6 +925,7 @@ begin
     begin
       sgTitles.Font.Size := sgTitles.Font.Size + 1;
     end;
+    FormatMarkers(True);
     key := 0;
   end
   else
@@ -900,14 +939,21 @@ begin
     begin
       sgTitles.Font.Size := sgTitles.Font.Size - 1;
     end;
+    FormatMarkers(True);
     key := 0;
   end
-end;
-
-procedure TfmMain.FormResize(Sender: TObject);
-begin
-  pnLogin.Left := (fmMain.Width - pnLogin.Width) div 2;
-  pnLogin.Top := (fmMain.Height - PnLogin.Height) div 2;
+  else
+  if ((key = 33) and (Shift = [ssMeta])) then
+  begin
+    zqNotes.Prior;
+    key := 0;
+  end
+  else
+  if ((key = 34) and (Shift = [ssMeta])) then
+  begin
+    zqNotes.Next;
+    key := 0;
+  end
 end;
 
 procedure TfmMain.edPasswordKeyPress(Sender: TObject; var Key: char);
@@ -931,9 +977,7 @@ begin
 end;
 
 procedure TfmMain.dbTextKeyDown(Sender: TObject; var Key: word; Shift: TShiftState);
-  var i, n, iPos: integer;
-    stLine: String;
-    blChanged: boolean = True;
+  var iPos: integer;
 begin
   if zqNotes.RecordCount = 0 then
   begin
@@ -942,23 +986,25 @@ begin
   else
   if ((key = Ord('Y')) and (Shift = [ssMeta, ssShift])) then
   begin
-    iPos := dbText.SelStart -
-      UTF8Length(dbText.Lines[dbText.CaretPos.Y - 1]) - UTF8Length(LineEnding);
-    dbText.Lines.Delete(dbText.CaretPos.y);
-    dbText.SelStart := iPos;
+    TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+      selectParagraph(nil);
+    TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+      delete(nil);
     ListAndFormatTitle;
     key := 0;
   end
   else
-  if ((key = Ord('F')) and (Shift = [ssAlt])) then
+  if ((key = Ord('F')) and (Shift = [ssMeta, ssAlt])) then
   begin
     SelectInsertFootnote;
     key := 0;
   end
   else
-  if ((key = 190) and (Shift = [ssAlt])) then // It's the dot
+  if ((key = 190) and (Shift = [ssMeta, ssAlt])) then // It's the dot
   begin
     SetLists;
+    dbTextChange(nil);
+    FormatMarkers(True);
     key := 0;
   end
   else
@@ -970,6 +1016,7 @@ begin
       dbText.Text := zqNotesTEXT.Value;
       dbText.SelStart := 0;
       ListAndFormatTitle;
+      FormatMarkers(True);
     end;
     key := 0;
   end
@@ -980,10 +1027,11 @@ begin
     begin
       iPos := dbText.SelStart - UTF8Length(dbtext.Lines[dbText.CaretPos.Y - 1]) -
          UTF8Length(LineEnding);
-      dbText.Lines.Insert(dbText.CaretPos.y - 1, dbText.Lines[dbText.CaretPos.Y]);
-      dbText.Lines.Delete(dbText.CaretPos.Y + 1);
+      dbText.Lines.Move(dbText.CaretPos.y, dbText.CaretPos.y - 1);
       dbText.SelStart := iPos;
       ListAndFormatTitle;
+      dbTextChange(nil);
+      FormatMarkers(True);
     end;
     key := 0;
   end
@@ -1000,54 +1048,19 @@ begin
       end;
       iPos := dbText.SelStart + UTF8Length(dbtext.Lines[dbText.CaretPos.Y + 1]) +
         UTF8Length(LineEnding);
-      dbText.Lines.Insert(dbText.CaretPos.y + 2, dbText.Lines[dbText.CaretPos.Y]);
-      dbText.Lines.Delete(dbText.CaretPos.Y - 3);
+      dbText.Lines.Move(dbText.CaretPos.y, dbText.CaretPos.y + 1);
       dbText.SelStart := iPos;
       ListAndFormatTitle;
+      dbTextChange(nil);
+      FormatMarkers(True);
     end;
     key := 0;
-  end
-  else
-  if key in [16, 17, 18, 20, 27, 33, 34, 35, 36, 37, 38, 39,
-    40, 45, 144, 234] then
-  begin
-    blChanged := False;
-  end
-  else
-  if ((key = 13) and ((ssCtrl in Shift) or (ssAlt in Shift) or
-    (ssAltGr in Shift))) then
-  begin
-    blChanged := True;
-  end
-  else
-  if ((ssAlt in Shift) or (ssCtrl in Shift)) then
-  begin
-    blChanged := False;
-  end;
-  if blChanged = True then
-  begin
-    if blChangedText = False then
-    begin
-      if zqNotes.RecordCount > 0 then
-      begin
-        zqNotes.Edit;
-      end
-      else
-      begin
-        zqNotes.Insert;
-        zqNotes.Edit;
-      end;
-      // The only edit is not enough
-      zqNotesMODIFICATION_DATE.Value := Now;
-    end;
-    blChangedText := True;
-    UpdateInfo;
   end;
 end;
 
 procedure TfmMain.dbTextKeyUp(Sender: TObject; var Key: word; Shift: TShiftState);
   var
-    iNum: integer;
+    iNum, iPos: integer;
     stLastChar, stNextChar: ShortString;
 begin
   if key in [16, 17, 18, 20, 27, 33, 34, 35, 36, 37, 38, 39, 40, 45, 234] then
@@ -1057,10 +1070,19 @@ begin
   if UTF8Copy(dbText.Lines[dbText.CaretPos.Y], 1, 1) = '#' then
   begin
     ListAndFormatTitle;
+    FormatMarkers(True);
   end
   else
   if key = 13 then
   begin
+    if UTF8Copy(dbText.Lines[dbText.CaretPos.Y - 1], 1, 1) = '#' then
+    begin
+      iPos := dbText.SelStart;
+      // Useful to make the text after the title in normal color
+      dbText.Lines.Move(dbText.CaretPos.y, dbText.CaretPos.y);
+      FormatMarkers(True);
+      dbText.SelStart := iPos;
+    end;
     if ((dbText.Lines[dbText.CaretPos.Y - 1] = '* ') or
       (dbText.Lines[dbText.CaretPos.Y - 1] = '- ') or
       (dbText.Lines[dbText.CaretPos.Y - 1] = '+ ') or
@@ -1071,43 +1093,52 @@ begin
       (UTF8Copy(dbText.Lines[dbText.CaretPos.Y - 1], 3, 2) = '. ')))) then
     begin
       dbText.Lines[dbText.CaretPos.Y - 1] := '';
+      FormatMarkers(True);
     end
     else
     if ((UTF8Copy(dbText.Lines[dbText.CaretPos.Y - 1], 1, 2) = '* ') and
       (UTF8Length(dbText.Lines[dbText.CaretPos.Y - 1]) > 2)) then
     begin
-      InsText('* ', dbText.SelStart);
+      InsText('* ');
     end
     else
     if ((UTF8Copy(dbText.Lines[dbText.CaretPos.Y - 1], 1, 2) = '- ') and
       (UTF8Length(dbText.Lines[dbText.CaretPos.Y - 1]) > 2)) then
     begin
-      InsText('- ', dbText.SelStart);
+      InsText('- ');
     end
     else
     if ((UTF8Copy(dbText.Lines[dbText.CaretPos.Y - 1], 1, 2) = '+ ') and
       (UTF8Length(dbText.Lines[dbText.CaretPos.Y - 1]) > 2)) then
     begin
-      InsText('+ ', dbText.SelStart);
+      InsText('+ ');
     end
     else
     if TryStrToInt(
       UTF8Copy(dbText.Lines[dbText.CaretPos.Y - 1], 1,
       UTF8Pos('.', dbText.Lines[dbText.CaretPos.Y - 1]) - 1), iNum) = True then
     begin
-      InsText(IntToStr(iNum + 1) + '. ', dbText.SelStart);
+      InsText(IntToStr(iNum + 1) + '. ');
     end;
   end;
-  UpdateInfo;
-end;
-
-procedure TfmMain.dbTextMouseUp(Sender: TObject; Button: TMouseButton;
-  Shift: TShiftState; X, Y: Integer);
-begin
-  if Shift = [ssCtrl] then
+  stLastChar := UTF8Copy(dbText.Text, dbText.SelStart, 1);
+  stNextChar := UTF8Copy(dbText.Text, dbText.SelStart + 1, 1);
+  if ((stLastChar = ':') and
+    ((UTF8Copy(dbText.Text, dbText.SelStart - 1, 1) = ':') or
+    (UTF8Copy(dbText.Text, dbText.SelStart + 1, 1) = ':'))) then
   begin
-    CheckAndRunLink;
+    FormatMarkers(False);
+  end
+  else
+  if ((UTF8Copy(dbText.Lines[dbText.CaretPos.Y], 1, 1) = '#') or
+    (UTF8Pos(stLastChar, '1234567890*/_~#|`()[]!^.>+- ' +
+      #13 + #9 + LineEnding) > 0) or
+    (key = 8) or (key = 46) or
+    (UTF8Pos(stNextChar, '*/~') > 0)) then
+  begin
+    FormatMarkers(False);
   end;
+  UpdateInfo;
 end;
 
 procedure TfmMain.sgTitlesClick(Sender: TObject);
@@ -1120,7 +1151,7 @@ procedure TfmMain.grTasksDrawColumnCell(Sender: TObject; const Rect: TRect;
 begin
   if zqTasks.FieldByName('DONE').AsInteger = 1 then
   begin
-    grTasks.canvas.Font.Color := clGreen;
+    grTasks.canvas.Font.Color := clTaskGreen;
   end
   else if ((zqTasks.FieldByName('END_DATE').IsNull = False) and
     (zqTasks.FieldByName('END_DATE').AsDateTime < Date)) then
@@ -1130,7 +1161,7 @@ begin
   else if ((zqTasks.FieldByName('START_DATE').IsNull = False) and
     (zqTasks.FieldByName('START_DATE').AsDateTime <= Date)) then
   begin
-    grTasks.canvas.Font.Color := clSkyBlue;
+    grTasks.canvas.Font.Color := clTaskBlue;
   end;
   grTasks.DefaultDrawColumnCell(Rect, DataCol, Column, State);
 end;
@@ -1261,6 +1292,29 @@ end;
 procedure TfmMain.bnFindClick(Sender: TObject);
 begin
   FindNotes;
+end;
+
+procedure TfmMain.dbTextChange(Sender: TObject);
+begin
+  if blModNote = False then
+  begin
+    if blChangedText = False then
+    begin
+      if zqNotes.RecordCount > 0 then
+      begin
+        zqNotes.Edit;
+      end
+      else
+      begin
+        zqNotes.Insert;
+        zqNotes.Edit;
+      end;
+      // The only edit is not enough
+      zqNotesMODIFICATION_DATE.Value := Now;
+    end;
+    blChangedText := True;
+    UpdateInfo;
+  end;
 end;
 
 procedure TfmMain.dbTitleKeyDown(Sender: TObject; var Key: word; Shift: TShiftState);
@@ -1663,12 +1717,6 @@ begin
   end;
 end;
 
-procedure TfmMain.miFileQuitClick(Sender: TObject);
-begin
-  SaveAll;
-  Close;
-end;
-
 procedure TfmMain.miEditReformatClick(Sender: TObject);
   var iPos: integer;
 begin
@@ -1680,6 +1728,7 @@ begin
   RenumberFootnotes;
   RenumberList;
   ListAndFormatTitle;
+  FormatMarkers(True);
   dbText.Refresh;
   dbText.SelStart := iPos;
   // This menu item can be called outside dbText, so...
@@ -2507,7 +2556,7 @@ begin
               Inc(i);
               stFileOrig.Text :=
                 StringReplace(stFileOrig.Text, '<w:footnoteReference w:id="',
-                ' [^' + IntToStr(i) + ']<', []);
+                '[^' + IntToStr(i) + ']<', []);
             end;
             i := 0;
             while Pos('<w:endnoteReference w:id="', stFileOrig.Text) > 0 do
@@ -2515,7 +2564,7 @@ begin
               Inc(i);
               stFileOrig.Text :=
                 StringReplace(stFileOrig.Text, '<w:endnoteReference w:id="',
-                ' [^endnote' + IntToStr(i) + ']<', []);
+                '[^endnote' + IntToStr(i) + ']<', []);
             end;
             dbText.Text := dbText.Text + CleanXML(stFileOrig.Text) + LineEnding;
           end;
@@ -2665,25 +2714,29 @@ begin
     pnLeft.Visible := False;
     pnRight.Visible := False;
     pnTitle.Visible := False;
+    pcPageControl.ShowTabs := False;
     sgTitles.Width := 300;
+    dbText.SetFocus;
   end
   else
   begin
     pnLeft.Visible := True;
     pnRight.Visible := True;
     pnTitle.Visible := True;
+    pcPageControl.ShowTabs := True;
     sgTitles.Width := 200;
+    dbText.SetFocus;
   end;
 end;
 
 procedure TfmMain.miToolsBackupClick(Sender: TObject);
 begin
-  if FileExistsUTF8(stBackupFile) = False then
+  if stBackupFile = '' then
   begin
     MessageDlg(msg049, mtWarning, [mbOK], 0);
     Exit;
   end;
-  if MessageDlg(msg005 + ' (' + GetDbSize(stBackupFile) + ')?',
+  if MessageDlg(msg005 + ' (' + GetDbSize(zcConnection.Database) + ')?',
     mtConfirmation, [mbOK, mbCancel], 0) = mrOk then
     try
       Screen.Cursor := crHourGlass;
@@ -2691,7 +2744,12 @@ begin
       try
         if FileExistsUTF8(stBackupFile) then
         begin
+          if FileExistsUTF8(stBackupFile + '.bak') = True then
+          begin
+            DeleteFileUTF8(stBackupFile + '.bak');
+          end;
           CopyFile(stBackupFile, stBackupFile + '.bak', [cffOverwriteFile], False);
+          DeleteFileUTF8(stBackupFile);
         end;
         if CopyFile(zcConnection.Database, stBackupFile, [cffOverwriteFile],
           False) = False then
@@ -2814,6 +2872,20 @@ begin
       fmPassword.edSysPwd.Text := '';
     end;
   end;
+end;
+
+procedure TfmMain.miToolsFullScreenClick(Sender: TObject);
+begin
+  if fmMain.WindowState = wsFullScreen then
+  begin
+    fmMain.WindowState := wsNormal;
+  end
+  else
+  begin
+    fmMain.WindowState := wsFullScreen;
+    // Due a bug...
+    fmMain.WindowState := wsFullScreen;
+  end
 end;
 
 procedure TfmMain.miToolsOptionsClick(Sender: TObject);
@@ -3007,10 +3079,12 @@ end;
 
 procedure TfmMain.zqNotesAfterScroll(DataSet: TDataSet);
 begin
+  blModNote := True;
   if zqNotes.RecordCount > 0 then
   begin
     dbText.Text := zqNotesTEXT.Value;
     ListAndFormatTitle;
+    FormatMarkers(True);
   end
   else
   begin
@@ -3018,6 +3092,7 @@ begin
     sgTitles.Clear;
   end;
   UpdateInfo;
+  blModNote := False;
 end;
 
 procedure TfmMain.zqNotesBeforeDelete(DataSet: TDataSet);
@@ -3272,6 +3347,8 @@ begin
   miEditPreview.Enabled := False;
   miEditOpenCurrWord.Enabled := False;
   miEditOpenAllWord.Enabled := False;
+  miEditOpenCurrWriter.Enabled := False;
+  miEditOpenAllWriter.Enabled := False;
   miEditBookmarks.Enabled := False;
   miNotebooksNew.Enabled := False;
   miNotebooksDelete.Enabled := False;
@@ -3346,6 +3423,8 @@ begin
   fmMain.KeyPreview := False;
   shSave.Brush.Color := clForm;
   pnMain.Visible := False;
+  pnLogin.Left := (fmMain.Width - pnLogin.Width) div 2;
+  pnLogin.Top := (fmMain.Height - PnLogin.Height) div 2;
   pnLogin.Visible := True;
   lbInfo.Caption := '';
   lbSize.Caption := '';
@@ -3394,6 +3473,8 @@ begin
   miEditPreview.Enabled := True;
   miEditOpenCurrWord.Enabled := True;
   miEditOpenAllWord.Enabled := True;
+  miEditOpenCurrWriter.Enabled := True;
+  miEditOpenAllWriter.Enabled := True;
   miEditBookmarks.Enabled := True;
   miNotebooksNew.Enabled := True;
   miNotebooksDelete.Enabled := True;
@@ -4481,69 +4562,6 @@ begin
   end;
 end;
 
-procedure TfmMain.CheckAndRunLink;
-var
-  iStartSel, iEndSel: integer;
-begin
-  iStartSel := dbText.SelStart;
-  while ((UTF8Copy(dbText.Text, iStartSel, 1) <> ' ') and
-      (UTF8Copy(dbText.Text, iStartSel, 1) <> #9) and
-      (UTF8Copy(dbText.Text, iStartSel, 1) <> LineEnding) and
-      (UTF8Copy(dbText.Text, iStartSel, 1) <> '`') and
-      (UTF8Copy(dbText.Text, iStartSel, 1) <> ']') and
-      (UTF8Copy(dbText.Text, iStartSel, 1) <> #13) and (iStartSel > 0)) do
-  begin
-    iStartSel := iStartSel - 1;
-  end;
-  if ((UTF8Copy(dbText.Text, iStartSel + 1, 1) = '(') or
-    (UTF8Copy(dbText.Text, iStartSel + 1, 1) = '{') or
-    (UTF8Copy(dbText.Text, iStartSel + 1, 1) = '[')) then
-  begin
-    iStartSel := iStartSel + 1;
-  end;
-  if (((UTF8LowerCase(UTF8Copy(dbText.Text, iStartSel + 1, 7)) = 'http://') and
-    (UTF8Copy(dbText.Text, iStartSel + 8, 1) <> LineEnding) and
-    (UTF8Length(dbText.Text) > iStartSel + 7)) or
-    ((UTF8LowerCase(UTF8Copy(dbText.Text, iStartSel + 1, 8)) = 'https://') and
-    (UTF8Copy(dbText.Text, iStartSel + 9, 1) <> LineEnding) and
-    (UTF8Length(dbText.Text) > iStartSel + 8)) or
-    ((UTF8LowerCase(UTF8Copy(dbText.Text, iStartSel + 1, 4)) = 'www.') and
-    (UTF8Copy(dbText.Text, iStartSel + 5, 1) <> LineEnding) and
-    (UTF8Length(dbText.Text) > iStartSel + 4)) or
-    ((UTF8LowerCase(UTF8Copy(dbText.Text, iStartSel + 1, 7)) = 'mailto:') and
-    (UTF8Copy(dbText.Text, iStartSel + 8, 1) <> LineEnding) and
-    (UTF8Length(dbText.Text) > iStartSel + 7))) then
-  begin
-    iEndSel := dbText.SelStart + 1;
-    while ((UTF8Copy(dbText.Text, iEndSel, 1) <> ' ') and
-        (UTF8Copy(dbText.Text, iEndSel, 1) <> LineEnding) and
-        (UTF8Copy(dbText.Text, iEndSel, 1) <> #9) and
-        (iEndSel <= UTF8Length(dbText.Text))) do
-    begin
-      iEndSel := iEndSel + 1;
-    end;
-    while ((UTF8Copy(dbText.Text, iEndSel, 1) = ' ') or
-        (UTF8Copy(dbText.Text, iEndSel, 1) = '.') or
-        (UTF8Copy(dbText.Text, iEndSel, 1) = ',') or
-        (UTF8Copy(dbText.Text, iEndSel, 1) = ';') or
-        (UTF8Copy(dbText.Text, iEndSel, 1) = ':') or
-        (UTF8Copy(dbText.Text, iEndSel, 1) = '?') or
-        (UTF8Copy(dbText.Text, iEndSel, 1) = '!') or
-        (UTF8Copy(dbText.Text, iEndSel, 1) = ')') or
-        (UTF8Copy(dbText.Text, iEndSel, 1) = ']') or
-        (UTF8Copy(dbText.Text, iEndSel, 1) = '}') or
-        (UTF8Copy(dbText.Text, iEndSel, 1) = LineEnding) or
-        (UTF8Copy(dbText.Text, iEndSel, 1) = #13) or
-        (UTF8Copy(dbText.Text, iEndSel, 1) = #9) or
-        (UTF8Copy(dbText.Text, iEndSel, 1) = '`') or
-        (UTF8Copy(dbText.Text, iEndSel, 1) = '')) do
-    begin
-      iEndSel := iEndSel - 1;
-    end;
-    OpenURL(UTF8Copy(dbText.Text, iStartSel + 1, iEndSel - iStartSel));
-  end;
-end;
-
 procedure TfmMain.ListAndFormatTitle;
 var
   i, iPos: integer;
@@ -4612,6 +4630,366 @@ begin
       sgTitles.Cells[0, i] := StringReplace(sgTitles.Cells[0, i],
         '~', '', [rfReplaceAll]);
     end;
+  end;
+end;
+
+procedure TfmMain.FormatMarkers(blAll: boolean);
+var
+  iPos, iPosLine, iPosCode, i, iTest: integer;
+  blCode, blLineCode: boolean;
+  stLine: String;
+  rng: NSRange;
+begin
+  if dbText.Text = '' then
+  begin
+    Exit;
+  end;
+  blCode := False;
+  iPos := 0;
+  for i := 0 to dbText.Lines.Count - 1 do
+  begin
+    if blAll = False then
+    begin
+      if i <> dbText.CaretPos.Y then
+      begin
+        iPos := iPos + UTF8Length(dbText.Lines[i]) + UTF8Length(LineEnding);
+        Continue;
+      end;
+    end;
+    stLine := dbText.Lines[i];
+    rng.location := iPos;
+    if i < dbText.Lines.Count - 1 then
+    begin
+      rng.length := UTF8Length(stLine) + UTF8Length(LineEnding);
+    end
+    else
+    begin
+      rng.length := UTF8Length(stLine);
+    end;
+    TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+      setTextColor_range(ColorToNSColor(dbText.Font.Color), rng);
+    if IsHeader(stLine) = True then
+    begin
+      rng.location := iPos;
+      rng.length := UTF8Length(stLine);
+      TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+        setTextColor_range(ColorToNSColor(clMarker), rng);
+    end;
+    iPosLine := 1;
+    while UTF8Pos('::', stLine, iPosLine) > 0 do
+    begin
+      iPosLine := UTF8Pos('::', stLine, iPosLine);
+      if UTF8Pos('::', stLine, iPosLine + 2) > 0 then
+      begin
+        rng.location := iPos + iPosLine - 1;
+        rng.length := 1;
+        TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+          setTextColor_range(ColorToNSColor(clMarker), rng);
+        rng.location := iPos + iPosLine;
+        rng.length := 1;
+        TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+          setTextColor_range(ColorToNSColor(clMarker), rng);
+        rng.location := iPos + iPosLine + 1;
+        rng.length := UTF8Pos('::', stLine, iPosLine + 2) - iPosLIne - 2;
+        TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+          setTextColor_range(ColorToNSColor(clHighlight), rng);
+        iPosLine := UTF8Pos('::', stLine, iPosLine + 2) + 2;
+        rng.location := iPos + iPosLine - 3;
+        rng.length := 1;
+        TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+          setTextColor_range(ColorToNSColor(clMarker), rng);
+        rng.location := iPos + iPosLine - 2;
+        rng.length := 1;
+        TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+          setTextColor_range(ColorToNSColor(clMarker), rng);
+      end
+      else
+      begin
+        iPosLine := iPosLine + 2;
+      end;
+    end;
+    iPosLine := 1;
+    while UTF8Pos('*', stLine, iPosLine) > 0 do
+    begin
+      iPosLine := UTF8Pos('*', stLine, iPosLine);
+      if (not((UTF8Copy(stLine, iPosLine - 1, 1) = ' ') and
+        (UTF8Copy(stLine, iPosLine + 1, 1) = ' ')) and
+        (blCode = False)) then
+      begin
+        rng.location := iPos + iPosLine - 1;
+        rng.length := 1;
+        TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+          setTextColor_range(ColorToNSColor(clMarker), rng);
+      end;
+      Inc(iPosLine);
+    end;
+    iPosLine := 1;
+    while UTF8Pos('/', stLine, iPosLine) > 0 do
+    begin
+      iPosLine := UTF8Pos('/', stLine, iPosLine);
+      if (not((UTF8Copy(stLine, iPosLine - 1, 1) = ' ') and
+        (UTF8Copy(stLine, iPosLine + 1, 1) = ' ')) and
+        (blCode = False)) then
+      begin
+        rng.location := iPos + iPosLine - 1;
+        rng.length := 1;
+        TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+          setTextColor_range(ColorToNSColor(clMarker), rng);
+      end;
+      Inc(iPosLine);
+    end;
+    iPosLine := 1;
+    while UTF8Pos('_', stLine, iPosLine) > 0 do
+    begin
+      iPosLine := UTF8Pos('_', stLine, iPosLine);
+      if (not((UTF8Copy(stLine, iPosLine - 1, 1) = ' ') and
+        (UTF8Copy(stLine, iPosLine + 1, 1) = ' ')) and
+        (blCode = False)) then
+      begin
+        rng.location := iPos + iPosLine - 1;
+        rng.length := 1;
+        TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+          setTextColor_range(ColorToNSColor(clMarker), rng);
+      end;
+      Inc(iPosLine);
+    end;
+    iPosLine := 1;
+    while UTF8Pos('~', stLine, iPosLine) > 0 do
+    begin
+      iPosLine := UTF8Pos('~', stLine, iPosLine);
+      if (not((UTF8Copy(stLine, iPosLine - 1, 1) = ' ') and
+        (UTF8Copy(stLine, iPosLine + 1, 1) = ' ')) and
+        (blCode = False)) then
+      begin
+        rng.location := iPos + iPosLine - 1;
+        rng.length := 1;
+        TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+          setTextColor_range(ColorToNSColor(clMarker), rng);
+      end;
+      Inc(iPosLine);
+    end;
+    iPosLine := 1;
+    while UTF8Pos('|', stLine, iPosLine) > 0 do
+    begin
+      iPosLine := UTF8Pos('|', stLine, iPosLine);
+      if blCode = False then
+      begin
+        rng.location := iPos + iPosLine - 1;
+        rng.length := 1;
+        TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+          setTextColor_range(ColorToNSColor(clMarker), rng);
+      end;
+      Inc(iPosLine);
+    end;
+    iPosLine := 1;
+    if UTF8Copy(stLine, 1, 3) = '```' then
+    begin
+      rng.location := iPos + iPosLine - 1;
+      rng.length := 1;
+      TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+        setTextColor_range(ColorToNSColor(clMarker), rng);
+      rng.location := iPos + iPosLine;
+      rng.length := 1;
+      TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+        setTextColor_range(ColorToNSColor(clMarker), rng);
+      rng.location := iPos + iPosLine + 1;
+      rng.length := 1;
+      TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+        setTextColor_range(ColorToNSColor(clMarker), rng);
+      if blCode = True then
+      begin
+        blCode := False;
+      end
+      else
+      begin
+        blCode := True;
+      end;
+    end
+    else
+    begin
+      blLineCode := False;
+      while UTF8Pos('`', stLine, iPosLine) > 0 do
+      begin
+        iPosLine := UTF8Pos('`', stLine, iPosLine);
+        rng.location := iPos + iPosLine - 1;
+        rng.length := 1;
+        TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+          setTextColor_range(ColorToNSColor(clMarker), rng);
+        if blLineCode = False then
+        begin
+          iPosCode := iPosLine;
+          blLineCode := True;
+        end
+        else
+        begin
+          rng.location := iPos + iPosCode;
+          rng.length := iPosLine - iPosCode - 1;
+          TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+            setTextColor_range(ColorToNSColor(dbText.Font.Color), rng);
+          blLineCode := False;
+        end;
+        Inc(iPosLine);
+      end;
+    end;
+    iPosLine := 1;
+    while UTF8Pos('!', stLine, iPosLine) > 0 do
+    begin
+      iPosLine := UTF8Pos('!', stLine, iPosLine);
+      if ((UTF8Copy(stLine, iPosLine + 1, 1) = '[')) then
+      begin
+        rng.location := iPos + iPosLine - 1;
+        rng.length := 1;
+        TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+          setTextColor_range(ColorToNSColor(clMarker), rng);
+      end;
+      Inc(iPosLine);
+    end;
+    iPosLine := 1;
+    while UTF8Pos('[', stLine, iPosLine) > 0 do
+    begin
+      iPosLine := UTF8Pos('[', stLine, iPosLine);
+      if ((UTF8Copy(stLine, iPosLine + 1, 1) = '^') or
+        (UTF8Copy(stLine, UTF8Pos(']', stLine, iPosLine) + 1, 1) = '(')) then
+      begin
+        rng.location := iPos + iPosLine - 1;
+        rng.length := 1;
+        TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+          setTextColor_range(ColorToNSColor(clMarker), rng);
+        if UTF8Pos(']', stLine, iPosLine) > 0 then
+        begin
+          rng.location := iPos + UTF8Pos(']', stLine, iPosLine) - 1;
+          rng.length := 1;
+          TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+            setTextColor_range(ColorToNSColor(clMarker), rng);
+        end;
+      end;
+      Inc(iPosLine);
+    end;
+    iPosLine := 1;
+    while UTF8Pos('(', stLine, iPosLine) > 0 do
+    begin
+      iPosLine := UTF8Pos('(', stLine, iPosLine);
+      if UTF8Copy(stLine, iPosLine - 1, 1) =']' then
+      begin
+        rng.location := iPos + iPosLine - 1;
+        rng.length := 1;
+        TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+          setTextColor_range(ColorToNSColor(clMarker), rng);
+        if UTF8Pos(')', stLine, iPosLine) > 0 then
+        begin
+
+          rng.location := iPos + iPosLine;
+          rng.length := UTF8Pos(')', stLine, iPosLine) - iPosLine;
+          TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+            setTextColor_range(ColorToNSColor(dbText.Font.Color), rng);
+
+          rng.location := iPos + UTF8Pos(')', stLine, iPosLine) - 1;
+          rng.length := 1;
+          TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+            setTextColor_range(ColorToNSColor(clMarker), rng);
+        end;
+      end;
+      Inc(iPosLine);
+    end;
+    iPosLine := 1;
+    while UTF8Pos('^', stLine, iPosLine) > 0 do
+    begin
+      iPosLine := UTF8Pos('^', stLine, iPosLine);
+      if UTF8Copy(stLine, iPosLine - 1, 1) = '[' then
+      begin
+        rng.location := iPos + iPosLine - 1;
+        rng.length := 1;
+        TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+          setTextColor_range(ColorToNSColor(clMarker), rng);
+      end;
+      Inc(iPosLine);
+    end;
+    iPosLine := 1;
+    while UTF8Pos(':', stLine, iPosLine) > 0 do
+    begin
+      iPosLine := UTF8Pos(':', stLine, iPosLine);
+      if ((UTF8Copy(stLine, iPosLine - 1, 1) = ']') and
+        (UTF8copy(stLine, 1, 2) = '[^')) then
+      begin
+        rng.location := iPos + iPosLine - 1;
+        rng.length := 1;
+        TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+          setTextColor_range(ColorToNSColor(clMarker), rng);
+      end;
+      Inc(iPosLine);
+    end;
+    iPosLine := 1;
+    if UTF8Pos('.', stLine, iPosLine) > 0 then
+    begin
+      iPosLine := UTF8Pos('.', stLine);
+      if ((TryStrToInt(UTF8Copy(stLine, 1, iPosLine - 1), iTest) = True) and
+        (UTF8copy(stLine, 1, 1) <> ' ') and
+        (UTF8Copy(stLine, iPosLine + 1, 1) = ' ') and
+        (UTF8Copy(stLine, iPosLine - 1, 1) <> ' ')) then
+      begin
+        rng.location := iPos;
+        rng.length := iPosLine;
+        TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+          setTextColor_range(ColorToNSColor(clMarker), rng);
+      end;
+    end;
+    iPosLine := 1;
+    while UTF8Pos('>', stLine, iPosLine) > 0 do
+    begin
+      if ((iPosLine = 1) and (UTF8Copy(stLine, 2, 1) = ' ')) then
+      begin
+        rng.location := iPos + iPosLine - 1;
+        rng.length := 1;
+        TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+          setTextColor_range(ColorToNSColor(clMarker), rng);
+      end;
+      Inc(iPosLine);
+    end;
+    iPosLine := 1;
+    while UTF8Pos('+', stLine, iPosLine) > 0 do
+    begin
+      iPosLine := UTF8Pos('+', stLine, iPosLine);
+      if ((iPosLine = 1) and (UTF8Copy(stLine, 2, 1) = ' ')) then
+      begin
+        rng.location := iPos + iPosLine - 1;
+        rng.length := 1;
+        TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+          setTextColor_range(ColorToNSColor(clMarker), rng);
+      end;
+      Inc(iPosLine);
+    end;
+    iPosLine := 1;
+    while UTF8Pos('-', stLine, iPosLine) > 0 do
+    begin
+      iPosLine := UTF8Pos('-', stLine, iPosLine);
+      if ((iPosLine = 1) and (UTF8Copy(stLine, 2, 1) = ' ')) then
+      begin
+        rng.location := iPos + iPosLine - 1;
+        rng.length := 1;
+        TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+          setTextColor_range(ColorToNSColor(clMarker), rng);
+      end;
+      Inc(iPosLine);
+    end;
+    iPosLine := 1;
+    if UTF8Pos('---', stLine, iPosLine) = 1 then
+    begin
+      begin
+        rng.location := iPos + iPosLine - 1;
+        rng.length := 1;
+        TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+          setTextColor_range(ColorToNSColor(clMarker), rng);
+        rng.location := iPos + iPosLine;
+        rng.length := 1;
+        TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+          setTextColor_range(ColorToNSColor(clMarker), rng);
+        rng.location := iPos + iPosLine + 1;
+        rng.length := 1;
+        TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+          setTextColor_range(ColorToNSColor(clMarker), rng);
+      end;
+    end;
+    iPos := iPos + UTF8Length(dbText.Lines[i]) + UTF8Length(LineEnding);
   end;
 end;
 
@@ -4752,11 +5130,11 @@ begin
     iEnd := dbText.SelStart;
     while iEnd < UTF8Length(dbText.Text) do
     begin
-      Inc(iEnd);
       if UTF8Copy(dbText.Text, iEnd, 1) = ']' then
       begin
         Break;
       end;
+      Inc(iEnd);
     end;
     if TryStrToInt(UTF8Copy(dbText.Text, iStart + 2,
       iEnd -iStart - 2), iNew) = True then
@@ -4790,10 +5168,10 @@ begin
           end;
         end;
       end;
-      InsText('[^' + IntToStr(iNew + 1) + ']', dbText.SelStart);
-      InsText(LineEnding + '[^' + IntToStr(iNew + 1) + ']: ',
-        UTF8Length(dbText.Text));
+      InsText('[^' + IntToStr(iNew + 1) + ']');
       dbText.SelStart := UTF8Length(dbText.Text);
+      InsText(LineEnding + '[^' + IntToStr(iNew + 1) + ']: ');
+      FormatMarkers(True);
     end;
   end;
 end;
@@ -4946,11 +5324,10 @@ begin
   end;
 end;
 
-procedure TfmMain.InsText(stText: string; iPos: integer);
+procedure TfmMain.InsText(stText: string);
 begin
-  dbText.Text := UTF8Copy(dbText.Text, 1, iPos) + stText +
-    UTF8Copy(dbText.Text, iPos + 1, dbText.SelLength - iPos);
-  dbText.SelStart := iPos + UTF8Length(stText);
+  TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+    insertText(NSStringUtf8(stText));
 end;
 
 function TfmMain.CleanXML(stXMLText: string): string;
