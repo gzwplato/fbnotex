@@ -27,5 +27,9 @@
 {"hash":151001474,"name":"tfmoptions.bnstmarkcolormod.caption","sourcebytes":[72,101,97,100,105,110,103,115,32,97,110,100,32,109,97,114,107,101,114,115,32,99,111,108,111,114],"value":"Headings and markers color"},
 {"hash":225374547,"name":"tfmoptions.bnstfontcolordef.caption","sourcebytes":[68,101,102,97,117,108,116,32,99,111,108,111,114,115],"value":"Default colors"},
 {"hash":194835042,"name":"tfmoptions.bnstfontcolordef1.caption","sourcebytes":[72,105,103,104,108,105,103,104,116,32,99,111,108,111,114],"value":"Highlight color"},
+{"hash":138675165,"name":"tfmoptions.lbstmaxchar.caption","sourcebytes":[83,105,109,112,108,101,32,116,101,120,116,32,102,114,111,109],"value":"Simple text from"},
+{"hash":54735664,"name":"tfmoptions.edstmaxchar.text","sourcebytes":[49,48,48,48,48,48],"value":"100000"},
+{"hash":43,"name":"tfmoptions.edstmaxplus.caption","sourcebytes":[43],"value":"+"},
+{"hash":45,"name":"tfmoptions.edstmaxless.caption","sourcebytes":[45],"value":"-"},
 {"hash":256115346,"name":"tfmoptions.cdcolordialog.title","sourcebytes":[83,101,108,101,99,116,32,97,32,99,111,108,111,114],"value":"Select a color"}
 ]}

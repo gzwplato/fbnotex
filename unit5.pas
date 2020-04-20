@@ -49,6 +49,7 @@ type
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure FormKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure sgBookmarksDblClick(Sender: TObject);
   private
 
@@ -90,7 +91,11 @@ begin
     key := 0;
     ModalResult := mrCancel;
   end
-  else
+end;
+
+procedure TfmBookmarks.FormKeyUp(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
   if key = 13 then
   begin
     key := 0;

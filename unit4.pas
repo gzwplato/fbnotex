@@ -39,8 +39,11 @@ type
     bnStFontColorDef1: TButton;
     bnStFontColorMod: TButton;
     bnStMarkColorMod: TButton;
+    edStMaxLess: TButton;
     edStSizePlus: TButton;
     edStSizeLess: TButton;
+    edStMaxChar: TEdit;
+    edStMaxPlus: TButton;
     edStSizeTitlesPlus: TButton;
     edStSizeTitlesLess: TButton;
     cbStFonts: TComboBox;
@@ -61,6 +64,7 @@ type
     lbPort: TLabel;
     lbStSize: TLabel;
     lbStSizeTitles: TLabel;
+    lbStMaxChar: TLabel;
     lnStFonts: TLabel;
     procedure bnCloseClick(Sender: TObject);
     procedure bnStFontColorDef1Click(Sender: TObject);
@@ -68,6 +72,8 @@ type
     procedure bnStFontColorModClick(Sender: TObject);
     procedure bnStMarkColorModClick(Sender: TObject);
     procedure cbStFontsChange(Sender: TObject);
+    procedure edStMaxLessClick(Sender: TObject);
+    procedure edStMaxPlusClick(Sender: TObject);
     procedure edStSizeChange(Sender: TObject);
     procedure edStSizeLessClick(Sender: TObject);
     procedure edStSizePlusClick(Sender: TObject);
@@ -120,6 +126,7 @@ begin
   end;
   edStSize.Text := IntToStr(fmMain.dbText.Font.Size);
   edStSizeTitles.Text := IntToStr(fmMain.sgTitles.Font.Size);
+  edStMaxChar.Text := IntToStr(iSimpleTextFrom);
   edFBLibPath.Text := fmMain.zcConnection.LibraryLocation;
   edFBgbakPath.Text := stGBackDir;
   edServer.Text := fmMain.zcConnection.HostName;
@@ -141,6 +148,11 @@ begin
       zcConnection.Database := edPath.Text;
     end;
     stBackupFile := edBackup.Text;
+    if edStMaxChar.Text = '' then
+    begin
+      edStMaxChar.Text := '100000';
+    end;
+    iSimpleTextFrom := StrToInt(edStMaxChar.Text);
     if UTF8LowerCase(edServer.Text) <> 'localhost' then
     begin
       fmMain.miToolsBackup.Enabled := False;
@@ -165,11 +177,13 @@ procedure TfmOptions.cbStFontsChange(Sender: TObject);
 begin
   fmMain.dbText.Font.Name := cbStFonts.Text;
   fmMain.sgTitles.Font.Name := cbStFonts.Text;
+  fmMain.FormatMarkers(2);
 end;
 
 procedure TfmOptions.edStSizeChange(Sender: TObject);
 begin
   fmMain.dbText.Font.Size := StrToInt(edStSize.Text);
+  fmMain.FormatMarkers(2);
 end;
 
 procedure TfmOptions.edStSizeLessClick(Sender: TObject);
@@ -209,6 +223,22 @@ begin
   end;
 end;
 
+procedure TfmOptions.edStMaxLessClick(Sender: TObject);
+begin
+  if StrToInt(edStMaxChar.Text) > 10000 then
+  begin
+    edStMaxChar.Text := IntToStr(StrToInt(edStMaxChar.Text) - 5000);
+  end;
+end;
+
+procedure TfmOptions.edStMaxPlusClick(Sender: TObject);
+begin
+  if StrToInt(edStMaxChar.Text) < 1000000 then
+  begin
+    edStMaxChar.Text := IntToStr(StrToInt(edStMaxChar.Text) + 5000);
+  end;
+end;
+
 procedure TfmOptions.bnStFontColorDefClick(Sender: TObject);
 begin
   if IsPaintDark = True then
@@ -222,7 +252,7 @@ begin
   fmMain.sgTitles.Font.Color := clDefault;
   clMarker := clRed;
   clHighlight := clGreen;
-  fmMain.FormatMarkers(True);
+  fmMain.FormatMarkers(2);
 end;
 
 procedure TfmOptions.bnStFontColorModClick(Sender: TObject);
@@ -232,7 +262,7 @@ begin
   begin
     fmMain.dbText.Font.Color := cdColorDialog.Color;
     fmMain.sgTitles.Font.Color := cdColorDialog.Color;
-    fmMain.FormatMarkers(True);
+    fmMain.FormatMarkers(2);
   end;
 end;
 
@@ -242,7 +272,7 @@ begin
   if cdColorDialog.Execute then
   begin
     clMarker := cdColorDialog.Color;
-    fmMain.FormatMarkers(True);
+    fmMain.FormatMarkers(2);
   end;
 end;
 
@@ -252,7 +282,7 @@ begin
   if cdColorDialog.Execute then
   begin
     clHighlight := cdColorDialog.Color;
-    fmMain.FormatMarkers(True);
+    fmMain.FormatMarkers(2);
   end;
 end;
 

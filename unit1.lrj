@@ -112,6 +112,7 @@
 {"hash":5989939,"name":"tfmmain.mitools.caption","sourcebytes":[84,111,111,108,115],"value":"Tools"},
 {"hash":254356713,"name":"tfmmain.mitoolsshoweditor.caption","sourcebytes":[83,104,111,119,32,101,100,105,116,111,114,32,111,110,108,121],"value":"Show editor only"},
 {"hash":131549534,"name":"tfmmain.mitoolsfullscreen.caption","sourcebytes":[70,117,108,108,32,115,99,114,101,101,110],"value":"Full screen"},
+{"hash":36546692,"name":"tfmmain.mitoolshidemarcol.caption","sourcebytes":[83,105,109,112,108,101,32,116,101,120,116],"value":"Simple text"},
 {"hash":42722885,"name":"tfmmain.mitoolsbackup.caption","sourcebytes":[66,97,99,107,117,112,32,100,97,116,97,98,97,115,101],"value":"Backup database"},
 {"hash":63599253,"name":"tfmmain.mitoolsrestore.caption","sourcebytes":[82,101,115,116,111,114,101,32,100,97,116,97,98,97,115,101],"value":"Restore database"},
 {"hash":249120885,"name":"tfmmain.mitoolscompact.caption","sourcebytes":[67,111,109,112,97,99,116,32,100,97,116,97,98,97,115,101],"value":"Compact database"},

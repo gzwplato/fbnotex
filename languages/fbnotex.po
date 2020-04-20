@@ -81,7 +81,7 @@ msgid "A free software to manage notes and documents"
 msgstr ""
 
 #: tfmcopyright.lbcopyrightname.caption
-msgid "fbNotex 1.1.0.0"
+msgid "fbNotex 1.2.0.0"
 msgstr ""
 
 #: tfmcopyright.lbcopyrightweb.caption
@@ -635,6 +635,10 @@ msgstr ""
 msgid "Full screen"
 msgstr ""
 
+#: tfmmain.mitoolshidemarcol.caption
+msgid "Simple text"
+msgstr ""
+
 #: tfmmain.mitoolsoptions.caption
 msgctxt "tfmmain.mitoolsoptions.caption"
 msgid "Options"
@@ -890,6 +894,20 @@ msgstr ""
 msgid "localhost"
 msgstr ""
 
+#: tfmoptions.edstmaxchar.text
+msgid "100000"
+msgstr ""
+
+#: tfmoptions.edstmaxless.caption
+msgctxt "tfmoptions.edstmaxless.caption"
+msgid "-"
+msgstr ""
+
+#: tfmoptions.edstmaxplus.caption
+msgctxt "tfmoptions.edstmaxplus.caption"
+msgid "+"
+msgstr ""
+
 #: tfmoptions.edstsize.text
 msgctxt "tfmoptions.edstsize.text"
 msgid "12"
@@ -943,6 +961,10 @@ msgstr ""
 
 #: tfmoptions.lbserver.caption
 msgid "Server"
+msgstr ""
+
+#: tfmoptions.lbstmaxchar.caption
+msgid "Simple text from"
 msgstr ""
 
 #: tfmoptions.lbstsize.caption

@@ -1,7 +1,7 @@
 object fmMain: TfmMain
-  Left = 428
+  Left = 485
   Height = 754
-  Top = 162
+  Top = 165
   Width = 1405
   ActiveControl = edPassword
   AllowDropFiles = True
@@ -2081,7 +2081,7 @@ object fmMain: TfmMain
   OnCreate = FormCreate
   OnDropFiles = FormDropFiles
   OnKeyDown = FormKeyDown
-  LCLVersion = '2.1.0.0'
+  LCLVersion = '2.0.8.0'
   object pnLogin: TPanel
     Left = 514
     Height = 416
@@ -4271,6 +4271,14 @@ object fmMain: TfmMain
         OnClick = miToolsFullScreenClick
       end
       object N23: TMenuItem
+        Caption = '-'
+      end
+      object miToolsHideMarCol: TMenuItem
+        Caption = 'Simple text'
+        ShortCut = 4167
+        OnClick = miToolsHideMarColClick
+      end
+      object N24: TMenuItem
         Caption = '-'
       end
       object miToolsBackup: TMenuItem

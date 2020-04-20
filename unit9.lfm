@@ -12,10 +12,10 @@ object fmSearch: TfmSearch
   OnShow = FormShow
   Position = poDefault
   ShowInTaskBar = stNever
-  LCLVersion = '2.0.6.0'
+  LCLVersion = '2.1.0.0'
   object edFind: TEdit
     Left = 27
-    Height = 21
+    Height = 22
     Top = 40
     Width = 386
     Anchors = [akTop, akLeft, akRight]
@@ -70,7 +70,7 @@ object fmSearch: TfmSearch
   end
   object edReplace: TEdit
     Left = 27
-    Height = 21
+    Height = 22
     Top = 110
     Width = 386
     Anchors = [akTop, akLeft, akRight]

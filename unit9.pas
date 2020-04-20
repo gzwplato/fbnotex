@@ -22,11 +22,13 @@
 unit Unit9;
 
 {$mode objfpc}{$H+}
+{$modeswitch objectivec1}
 
 interface
 
 uses
-  Classes, SysUtils, Forms, Controls, Graphics, Dialogs, StdCtrls, LazUTF8;
+  Classes, SysUtils, Forms, Controls, Graphics, Dialogs, StdCtrls, LazUTF8,
+  CocoaAll, CocoaTextEdits;
 
 type
 
@@ -72,36 +74,42 @@ uses Unit1;
 
 procedure TfmSearch.bnFirstClick(Sender: TObject);
   var iPos: integer;
+    rng: NSRange;
 begin
   iPos := UTF8Pos(UTF8UpperCase(edFind.Text), UTF8UpperCase(fmMain.dbText.Text), 1);
   if iPos > 0 then
   begin
     fmMain.dbText.SelStart := iPos - 1;
-    fmMain.dbText.SelLength := UTF8Length(edFind.Text);
-    fmMain.dbText.SetFocus;
-    fmMain.Show;
+    rng.location := iPos - 1;
+    rng.length := UTF8Length(edFind.Text);
+    TCocoaTextView(NSScrollView(fmMain.dbText.Handle).documentView).
+      showFindIndicatorForRange(rng);
   end
   else
   begin
     MessageDlg(msgFnd001, mtInformation, [mbOK], 0);
+    fmSearch.SetFocus;
   end;
 end;
 
 procedure TfmSearch.bnNextClick(Sender: TObject);
   var iPos: integer;
+    rng: NSRange;
 begin
   iPos := UTF8Pos(UTF8UpperCase(edFind.Text), UTF8UpperCase(fmMain.dbText.Text),
-    fmMain.dbText.SelStart + fmMain.dbText.SelLength + 1);
+    fmMain.dbText.SelStart + UTF8Length(edFind.Text) + 1);
   if iPos > 0 then
   begin
     fmMain.dbText.SelStart := iPos - 1;
-    fmMain.dbText.SelLength := UTF8Length(edFind.Text);
-    fmMain.dbText.SetFocus;
-    fmMain.Show;
+    rng.location := iPos - 1;
+    rng.length := UTF8Length(edFind.Text);
+    TCocoaTextView(NSScrollView(fmMain.dbText.Handle).documentView).
+      showFindIndicatorForRange(rng);
   end
   else
   begin
     MessageDlg(msgFnd001, mtInformation, [mbOK], 0);
+    fmSearch.SetFocus;
   end;
 end;
 
@@ -119,7 +127,7 @@ begin
     fmMain.dbText.Text := StringReplace(fmMain.dbText.Text,
       stFind, stReplace, [rfIgnoreCase, rfReplaceAll]);
     fmMain.ListAndFormatTitle;
-    fmMain.dbText.SetFocus;
+    fmMain.FormatMarkers(2);
     fmMain.zqNotes.Edit;
     fmMain.zqNotesMODIFICATION_DATE.Value := Now;
     fmMain.Show;
@@ -129,7 +137,13 @@ end;
 procedure TfmSearch.edFindKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
-  if key = 13 then
+  if ((key = 13) and (Shift = [ssMeta])) then
+  begin
+    key := 0;
+    bnNextClick(nil);
+  end
+  else
+  if ((key = 13) and (Shift = [])) then
   begin
     key := 0;
     bnFirstClick(nil);
