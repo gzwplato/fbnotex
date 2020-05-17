@@ -8,13 +8,12 @@ object fmOptions: TfmOptions
   Caption = 'Options'
   ClientHeight = 552
   ClientWidth = 589
-  FormStyle = fsStayOnTop
   OnClose = FormClose
   OnCreate = FormCreate
   OnShow = FormShow
   Position = poScreenCenter
   ShowInTaskBar = stNever
-  LCLVersion = '2.1.0.0'
+  LCLVersion = '2.0.8.0'
   object cbStFonts: TComboBox
     Left = 43
     Height = 20

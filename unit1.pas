@@ -88,6 +88,23 @@ type
     lbInfo: TLabel;
     lbTitle: TLabel;
     lbID: TLabel;
+    pmTextCut: TMenuItem;
+    pmTextCopy: TMenuItem;
+    pmTextPaste: TMenuItem;
+    pmTextSelectAll: TMenuItem;
+    pmTextCheckSpelling: TMenuItem;
+    pmTextCheckDocument: TMenuItem;
+    N37: TMenuItem;
+    N36: TMenuItem;
+    miEditCheckSpelling: TMenuItem;
+    miEditCheckDocument: TMenuItem;
+    N35: TMenuItem;
+    miEditSelectAll: TMenuItem;
+    N34: TMenuItem;
+    miEditPaste: TMenuItem;
+    miEditCopy: TMenuItem;
+    miEditCut: TMenuItem;
+    N26: TMenuItem;
     miToolsHideMarCol: TMenuItem;
     N24: TMenuItem;
     miToolsFullScreen: TMenuItem;
@@ -253,6 +270,7 @@ type
     pmAttachments: TPopupMenu;
     pmTags: TPopupMenu;
     pmLinks: TPopupMenu;
+    pmText: TPopupMenu;
     ppTags: TPopupMenu;
     sdSaveDialog: TSaveDialog;
     shLogin: TShape;
@@ -405,6 +423,12 @@ type
     procedure grTasksDrawColumnCell(Sender: TObject; const Rect: TRect;
       DataCol: integer; Column: TColumn; State: TGridDrawState);
     procedure grTasksKeyDown(Sender: TObject; var Key: word; Shift: TShiftState);
+    procedure miEditCopyClick(Sender: TObject);
+    procedure miEditCutClick(Sender: TObject);
+    procedure miEditCheckDocumentClick(Sender: TObject);
+    procedure miEditPasteClick(Sender: TObject);
+    procedure miEditSelectAllClick(Sender: TObject);
+    procedure miEditCheckSpellingClick(Sender: TObject);
     procedure miToolsHideMarColClick(Sender: TObject);
     procedure miEditBookmarksClick(Sender: TObject);
     procedure miEditOpenCurrWriterClick(Sender: TObject);
@@ -492,6 +516,7 @@ type
     procedure zqNotesBeforeDelete(DataSet: TDataSet);
     procedure zqNotesBeforeInsert(DataSet: TDataSet);
     procedure zqNotesBeforePost(DataSet: TDataSet);
+    procedure zqNotesBeforeScroll(DataSet: TDataSet);
     procedure zqSectionsAfterDelete(DataSet: TDataSet);
     procedure zqSectionsAfterInsert(DataSet: TDataSet);
     procedure zqSectionsAfterScroll(DataSet: TDataSet);
@@ -525,7 +550,9 @@ type
     procedure RefreshData;
     procedure SaveAll;
     procedure SelectTitle;
+    function GoToNotePos(IDNote: integer): integer;
     procedure SetLists;
+    procedure SetNotePos(IDNote, iPos: integer);
     procedure UpdateInfo;
   public
     procedure ListAndFormatTitle;
@@ -533,8 +560,17 @@ type
 
   end;
 
+type
+  TNotePos = record
+    IDNote: integer;
+    Pos: integer;
+  end;
+
+  TNotePosArray = Array of TNotePos;
+
 var
   fmMain: TfmMain;
+  myNotePos: TNotePosArray;
   myHomeDir, myConfigFile, stBackupFile, stGBackDir: string;
   blSortCustomNotebooks: boolean = True;
   blSortCustomSections: boolean = True;
@@ -551,7 +587,6 @@ var
   clMarker: TColor = clRed;
   clHighlight: TColor = clGreen;
   clTaskGreen, clTaskBlue: TColor;
-  myColor: TColor = TColor($76CF76);
 
 resourcestring
 
@@ -657,20 +692,6 @@ begin
   stBackupFile := '/Users/' + GetUserDir + 'Data/fbNotex-backup.fdb';
   stGBackDir := '/Library/Frameworks/firebird.framework/Versions/A/' +
     'Resources/bin/gbak';
-  TCocoaTextView(NSScrollView(dbText.Handle).documentView).
-    setRichText(True);
-  TCocoaTextView(NSScrollView(dbText.Handle).documentView).
-    setContinuousSpellCheckingEnabled(True);
-  TCocoaTextView(NSScrollView(dbText.Handle).documentView).
-    textContainer.setLineFragmentPadding(30);
-  TCocoaTextView(NSScrollView(dbText.Handle).documentView).
-    setFocusRingType(1);
-  TCocoaTextView(NSScrollView(dbText.Handle).documentView).
-    setAutomaticDashSubstitutionEnabled(True);
-  TCocoaTextView(NSScrollView(dbText.Handle).documentView).
-    setAutomaticQuoteSubstitutionEnabled(True);
-  TCocoaTextView(NSScrollView(dbText.Handle).documentView).
-    setSmartInsertDeleteEnabled(True);
   if DirectoryExists(myHomeDir) = False then
   begin
     CreateDirUTF8(myHomeDir);
@@ -743,23 +764,14 @@ begin
   end;
   Disconnect;
   miFBNotex.Caption := #$EF#$A3#$BF;
-  grNotebooks.SelectedColor := myColor;
   grNotebooks.FocusRectVisible := False;
-  grSections.SelectedColor := myColor;
   grSections.FocusRectVisible := False;
-  grNotes.SelectedColor := myColor;
   grNotes.FocusRectVisible := False;
-  grAttachments.SelectedColor := myColor;
   grAttachments.FocusRectVisible := False;
-  grTags.SelectedColor := myColor;
   grTags.FocusRectVisible := False;
-  grLinks.SelectedColor := myColor;
   grLinks.FocusRectVisible := False;
-  grTasks.SelectedColor := myColor;
   grTasks.FocusRectVisible := False;
-  grTagsList.SelectedColor := myColor;
   grTagsList.FocusRectVisible := False;
-  grFind.SelectedColor := myColor;
   grFind.FocusRectVisible := False;
   sgTitles.FocusRectVisible := False;
   if IsPaintDark = False then
@@ -879,6 +891,20 @@ begin
   fmOptions.edServer.Text := zcConnection.HostName;
   fmOptions.edPath.Text := zcConnection.Database;
   fmOptions.edBackup.Text := stBackupFile;
+  TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+    setRichText(True);
+  TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+    setContinuousSpellCheckingEnabled(True);
+  TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+    textContainer.setLineFragmentPadding(30);
+  TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+    setFocusRingType(1);
+  TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+    setAutomaticDashSubstitutionEnabled(True);
+  TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+    setAutomaticQuoteSubstitutionEnabled(True);
+  TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+    setSmartInsertDeleteEnabled(True);
 end;
 
 procedure TfmMain.FormDropFiles(Sender: TObject; const FileNames: array of string);
@@ -892,7 +918,9 @@ begin
     zqAttachments.Append;
     zqAttachments.Edit;
     zqAttachmentsATTACHMENT.LoadFromFile(myFile);
-    zqAttachmentsTITLE.Value := ExtractFileName(myFile);
+    zqAttachmentsTITLE.Value :=
+      StringReplace(ExtractFileName(myFile),
+     #39, '', [rfReplaceAll]);
     zqAttachments.Post;
     lbSize.Caption := sb004 + ': ' + GetDbSize(zcConnection.Database) + '.';
   end;
@@ -1113,6 +1141,9 @@ begin
     begin
       dbText.Lines[dbText.CaretPos.Y - 1] := '';
       FormatMarkers(2);
+      // Workaround
+      dbText.SelStart := dbText.SelStart - 1;
+      dbText.SelStart := dbText.SelStart + 1;
     end
     else
     if ((UTF8Copy(dbText.Lines[dbText.CaretPos.Y - 1], 1, 2) = '* ') and
@@ -1184,9 +1215,16 @@ begin
   if ((UTF8Pos(stLastChar, '1234567890*/_~#|`()[]!^.>+- ' +
       #13 + #9 + LineEnding) > 0) or
     (key = 8) or (key = 46) or
-    (UTF8Pos(stNextChar, '*/~') > 0)) then
+    (UTF8Pos(stNextChar, '*/~_') > 0)) then
   begin
     FormatMarkers(1);
+  end;
+  //Workaround to color immediately all the title
+  if ((UTF8Copy(dbText.Lines[dbText.CaretPos.Y], 1, 1) = '#') and
+    (stLastChar = ' ') and (stNextChar = LineEnding)) then
+  begin
+    dbText.SelStart := dbText.SelStart - 1;
+    dbText.SelStart := dbText.SelStart + 1;
   end;
   UpdateInfo;
 end;
@@ -1777,6 +1815,31 @@ begin
   end;
 end;
 
+procedure TfmMain.miEditCutClick(Sender: TObject);
+begin
+  TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+    cut(nil);
+end;
+
+procedure TfmMain.miEditCopyClick(Sender: TObject);
+begin
+  TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+    copy_(nil);
+end;
+
+procedure TfmMain.miEditPasteClick(Sender: TObject);
+begin
+  TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+    pasteAsPlainText(nil);
+  FormatMarkers(1);
+end;
+
+procedure TfmMain.miEditSelectAllClick(Sender: TObject);
+begin
+  TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+    selectAll(nil);
+end;
+
 procedure TfmMain.miEditReformatClick(Sender: TObject);
   var iPos: integer;
 begin
@@ -1885,10 +1948,34 @@ begin
   end;
 end;
 
+procedure TfmMain.miEditCheckSpellingClick(Sender: TObject);
+begin
+  miEditCheckSpelling.Checked := not miEditCheckSpelling.Checked;
+  pmTextCheckSpelling.Checked := not pmTextCheckSpelling.Checked;
+  if miEditCheckSpelling.Checked = True then
+  begin
+    TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+      setContinuousSpellCheckingEnabled(True);
+  end
+  else
+  begin
+    TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+      setContinuousSpellCheckingEnabled(False);
+  end;
+end;
+
+procedure TfmMain.miEditCheckDocumentClick(Sender: TObject);
+begin
+  TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+    moveWordBackwardAndModifySelection(nil);
+  TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+    showGuessPanel(nil);
+end;
+
 procedure TfmMain.miNotebooksNewClick(Sender: TObject);
 begin
   zqNotebooks.Append;
-  fmNotebooks.Show;
+  fmNotebooks.ShowModal;
 end;
 
 procedure TfmMain.miNotebooksSortbyCustomClick(Sender: TObject);
@@ -1990,7 +2077,7 @@ end;
 
 procedure TfmMain.miNotebooksCommentsClick(Sender: TObject);
 begin
-  fmNotebooks.Show;
+  fmNotebooks.ShowModal;
 end;
 
 procedure TfmMain.miNotebooksCopyIDClick(Sender: TObject);
@@ -2001,7 +2088,7 @@ end;
 procedure TfmMain.miSectionsNewClick(Sender: TObject);
 begin
   zqSections.Append;
-  fmSections.Show;
+  fmSections.ShowModal;
 end;
 
 procedure TfmMain.miSectionsDeleteClick(Sender: TObject);
@@ -2103,7 +2190,7 @@ end;
 
 procedure TfmMain.miSectionsCommentsClick(Sender: TObject);
 begin
-  fmSections.Show;
+  fmSections.ShowModal;
 end;
 
 procedure TfmMain.miSectionsChangeNotebookClick(Sender: TObject);
@@ -2292,7 +2379,9 @@ begin
         zqAttachments.Append;
         zqAttachments.Edit;
         zqAttachmentsATTACHMENT.LoadFromFile(odOpenDialog.Files[i]);
-        zqAttachmentsTITLE.Value := ExtractFileName(odOpenDialog.Files[i]);
+        zqAttachmentsTITLE.Value :=
+          StringReplace(ExtractFileName(odOpenDialog.Files[i]),
+          #39, '', [rfReplaceAll]);
         zqAttachments.Post;
       end;
     end;
@@ -2326,7 +2415,7 @@ begin
   if zqAttachments.RecordCount > 0 then
   begin
     sdSaveDialog.DefaultExt := '';
-    sdSaveDialog.Filter := 'All files|*';
+    sdSaveDialog.Filter := fileext002;
     sdSaveDialog.FileName := zqAttachmentsTITLE.Value;
     if sdSaveDialog.Execute then
     begin
@@ -2584,7 +2673,8 @@ begin
           zqAttachments.Edit;
           zqAttachmentsATTACHMENT.LoadFromFile(odOpenDialog.Files[iFile]);
           zqAttachmentsTITLE.Value :=
-            ExtractFileName(odOpenDialog.Files[iFile]);
+            StringReplace(ExtractFileName(odOpenDialog.Files[iFile]),
+            #39, '', [rfReplaceAll]);
           zqAttachments.Post;
           zqAttachments.ApplyUpdates;
         finally
@@ -2671,7 +2761,8 @@ begin
           zqAttachments.Edit;
           zqAttachmentsATTACHMENT.LoadFromFile(odOpenDialog.Files[iFile]);
           zqAttachmentsTITLE.Value :=
-            ExtractFileName(odOpenDialog.Files[iFile]);
+            StringReplace(ExtractFileName(odOpenDialog.Files[iFile]),
+            #39, '', [rfReplaceAll]);
           zqAttachments.Post;
           zqAttachments.ApplyUpdates;
         finally
@@ -3175,6 +3266,11 @@ begin
   zqNotes.ApplyUpdates;
 end;
 
+procedure TfmMain.zqNotesBeforeScroll(DataSet: TDataSet);
+begin
+  SetNotePos(zqNotesID.Value, dbText.SelStart);
+end;
+
 procedure TfmMain.zqNotesAfterScroll(DataSet: TDataSet);
 begin
   blModNote := True;
@@ -3193,6 +3289,7 @@ begin
       ListAndFormatTitle;
       FormatMarkers(2);
     end;
+    dbText.SelStart := GoToNotePos(zqNotesID.Value);
   end
   else
   begin
@@ -3451,6 +3548,10 @@ begin
   miFileExport.Enabled := False;
   miFileImport.Enabled := False;
   miFileClose.Enabled := False;
+  miEditCut.Enabled := False;
+  miEditCopy.Enabled := False;
+  miEditPaste.Enabled := False;
+  miEditSelectAll.Enabled := False;
   miEditReformat.Enabled := False;
   miEditPreview.Enabled := False;
   miEditOpenCurrWord.Enabled := False;
@@ -3458,6 +3559,8 @@ begin
   miEditOpenCurrWriter.Enabled := False;
   miEditOpenAllWriter.Enabled := False;
   miEditBookmarks.Enabled := False;
+  miEditCheckSpelling.Enabled := False;
+  miEditCheckDocument.Enabled := False;
   miNotebooksNew.Enabled := False;
   miNotebooksDelete.Enabled := False;
   miNotebooksSortby.Enabled := False;
@@ -3586,6 +3689,10 @@ begin
   miFileExport.Enabled := True;
   miFileImport.Enabled := True;
   miFileClose.Enabled := True;
+  miEditCut.Enabled := True;
+  miEditCopy.Enabled := True;
+  miEditPaste.Enabled := True;
+  miEditSelectAll.Enabled := True;
   miEditReformat.Enabled := True;
   miEditPreview.Enabled := True;
   miEditOpenCurrWord.Enabled := True;
@@ -3593,6 +3700,8 @@ begin
   miEditOpenCurrWriter.Enabled := True;
   miEditOpenAllWriter.Enabled := True;
   miEditBookmarks.Enabled := True;
+  miEditCheckSpelling.Enabled := True;
+  miEditCheckDocument.Enabled := True;
   miNotebooksNew.Enabled := True;
   miNotebooksDelete.Enabled := True;
   miNotebooksSortby.Enabled := True;
@@ -4764,10 +4873,15 @@ begin
   begin
     if iAll = 1 then
     begin
-      if i <> dbText.CaretPos.Y then
+      // the last character is within the last line, but
+      // dbText.CaretPos.y is one more line that dbText.Lines.Count - 1;
+      if not ((i = dbText.Lines.Count - 1) and (dbText.CaretPos.y > i)) then
       begin
-        iPos := iPos + UTF8Length(dbText.Lines[i]) + UTF8Length(LineEnding);
-        Continue;
+        if i <> dbText.CaretPos.Y then
+        begin
+          iPos := iPos + UTF8Length(dbText.Lines[i]) + UTF8Length(LineEnding);
+          Continue;
+        end;
       end;
     end;
     stLine := dbText.Lines[i];
@@ -4780,14 +4894,15 @@ begin
     begin
       rng.length := UTF8Length(stLine);
     end;
-    TCocoaTextView(NSScrollView(dbText.Handle).documentView).
-      setTextColor_range(ColorToNSColor(dbText.Font.Color), rng);
     if IsHeader(stLine) = True then
     begin
-      rng.location := iPos;
-      rng.length := UTF8Length(stLine);
       TCocoaTextView(NSScrollView(dbText.Handle).documentView).
         setTextColor_range(ColorToNSColor(clMarker), rng);
+    end
+    else
+    begin
+      TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+        setTextColor_range(ColorToNSColor(dbText.Font.Color), rng);
     end;
     iPosLine := 1;
     while UTF8Pos('::', stLine, iPosLine) > 0 do
@@ -5474,6 +5589,36 @@ begin
   begin
     Result := Copy(Result, 2, Length(Result));
   end;
+end;
+
+function TfmMain.GoToNotePos(IDNote: integer): integer;
+  var i: integer;
+begin
+  Result := 0;
+  for i := 0 to Length(myNotePos) - 1 do
+  begin;
+    if IDNote = myNotePos[i].IDNote then
+    begin
+      Result := myNotePos[i].Pos;
+      Break;
+    end;
+  end;
+end;
+
+procedure TfmMain.SetNotePos(IDNote, iPos: integer);
+  var i: integer;
+begin
+  for i := 0 to Length(myNotePos) - 1 do
+  begin;
+    if IDNote = myNotePos[i].IDNote then
+    begin
+      myNotePos[i].Pos := iPos;
+      Exit;
+    end;
+  end;
+  SetLength(myNotePos, Length(myNotePos) + 1);
+  myNotePos[Length(myNotePos) - 1].IDNote := IDNote;
+  myNotePos[Length(myNotePos) - 1].Pos := iPos;
 end;
 
 function TfmMain.ColorToHtml(clColor: TColor): string;

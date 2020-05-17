@@ -9,23 +9,22 @@ object fmPassword: TfmPassword
   Caption = 'Password'
   ClientHeight = 222
   ClientWidth = 300
-  FormStyle = fsStayOnTop
   OnActivate = FormActivate
   OnKeyDown = FormKeyDown
   Position = poScreenCenter
   ShowInTaskBar = stNever
-  LCLVersion = '2.0.6.0'
+  LCLVersion = '2.0.8.0'
   object lbSudoPwd: TLabel
     Left = 25
-    Height = 19
+    Height = 16
     Top = 27
-    Width = 163
+    Width = 153
     Caption = 'Insert the sudo password'
     ParentColor = False
   end
   object edSudoPwd: TEdit
     Left = 25
-    Height = 36
+    Height = 22
     Top = 50
     Width = 255
     EchoMode = emPassword
@@ -54,15 +53,15 @@ object fmPassword: TfmPassword
   end
   object lbSysPwd: TLabel
     Left = 25
-    Height = 19
+    Height = 16
     Top = 95
-    Width = 190
+    Width = 174
     Caption = 'Insert the SYSDBA password'
     ParentColor = False
   end
   object edSysPwd: TEdit
     Left = 25
-    Height = 36
+    Height = 22
     Top = 118
     Width = 255
     EchoMode = emPassword

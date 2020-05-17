@@ -81,7 +81,7 @@ msgid "A free software to manage notes and documents"
 msgstr ""
 
 #: tfmcopyright.lbcopyrightname.caption
-msgid "fbNotex 1.2.0.0"
+msgid "fbNotex 1.2.1.0"
 msgstr ""
 
 #: tfmcopyright.lbcopyrightweb.caption
@@ -281,6 +281,26 @@ msgstr ""
 msgid "Show bookmarks"
 msgstr ""
 
+#: tfmmain.mieditcheckdocument.caption
+msgctxt "tfmmain.mieditcheckdocument.caption"
+msgid "Check document now"
+msgstr ""
+
+#: tfmmain.mieditcheckspelling.caption
+msgctxt "tfmmain.mieditcheckspelling.caption"
+msgid "Check spelling while typing"
+msgstr ""
+
+#: tfmmain.mieditcopy.caption
+msgctxt "tfmmain.mieditcopy.caption"
+msgid "Copy"
+msgstr ""
+
+#: tfmmain.mieditcut.caption
+msgctxt "tfmmain.mieditcut.caption"
+msgid "Cut"
+msgstr ""
+
 #: tfmmain.mieditopenallword.caption
 msgid "Open section in Word"
 msgstr ""
@@ -297,12 +317,21 @@ msgstr ""
 msgid "Open note in Writer"
 msgstr ""
 
+#: tfmmain.mieditpaste.caption
+msgctxt "tfmmain.mieditpaste.caption"
+msgid "Paste"
+msgstr ""
+
 #: tfmmain.mieditpreview.caption
 msgid "Preview"
 msgstr ""
 
 #: tfmmain.mieditreformat.caption
 msgid "Reformat"
+msgstr ""
+
+#: tfmmain.mieditselectall.caption
+msgid "Select All"
 msgstr ""
 
 #: tfmmain.mifbcopyright.caption
@@ -798,6 +827,36 @@ msgstr ""
 #: tfmmain.pmsectionsnew.caption
 msgctxt "tfmmain.pmsectionsnew.caption"
 msgid "New"
+msgstr ""
+
+#: tfmmain.pmtextcheckdocument.caption
+msgctxt "tfmmain.pmtextcheckdocument.caption"
+msgid "Check document now"
+msgstr ""
+
+#: tfmmain.pmtextcheckspelling.caption
+msgctxt "tfmmain.pmtextcheckspelling.caption"
+msgid "Check spelling while typing"
+msgstr ""
+
+#: tfmmain.pmtextcopy.caption
+msgctxt "tfmmain.pmtextcopy.caption"
+msgid "Copy"
+msgstr ""
+
+#: tfmmain.pmtextcut.caption
+msgctxt "tfmmain.pmtextcut.caption"
+msgid "Cut"
+msgstr ""
+
+#: tfmmain.pmtextpaste.caption
+msgctxt "tfmmain.pmtextpaste.caption"
+msgid "Paste"
+msgstr ""
+
+#: tfmmain.pmtextselectall.caption
+msgctxt "tfmmain.pmtextselectall.caption"
+msgid "Select all"
 msgstr ""
 
 #: tfmmain.sdsavedialog.title

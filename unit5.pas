@@ -70,7 +70,6 @@ uses Unit1;
 
 procedure TfmBookmarks.FormCreate(Sender: TObject);
 begin
-  sgBookmarks.SelectedColor := myColor;
   sgBookmarks.FocusRectVisible := False;
   if FileExistsUTF8(myHomeDir + 'bookmarks') then
   begin

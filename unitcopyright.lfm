@@ -11,7 +11,7 @@ object fmCopyright: TfmCopyright
   OnCreate = FormCreate
   Position = poScreenCenter
   ShowInTaskBar = stNever
-  LCLVersion = '2.1.0.0'
+  LCLVersion = '2.0.8.0'
   object imImagecopyright: TImage
     Left = 25
     Height = 128
@@ -902,8 +902,8 @@ object fmCopyright: TfmCopyright
     Left = 172
     Height = 43
     Top = 13
-    Width = 259
-    Caption = 'fbNotex 1.2.0.0'
+    Width = 251
+    Caption = 'fbNotex 1.2.1.0'
     Font.Color = 7786358
     Font.Height = -36
     Font.Style = [fsBold]

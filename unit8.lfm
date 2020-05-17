@@ -8,13 +8,12 @@ object fmShowAllTasks: TfmShowAllTasks
   Caption = 'Show all the tasks'
   ClientHeight = 742
   ClientWidth = 1152
-  FormStyle = fsStayOnTop
   KeyPreview = True
   OnCreate = FormCreate
   OnKeyDown = FormKeyDown
   Position = poScreenCenter
   ShowInTaskBar = stNever
-  LCLVersion = '2.0.6.0'
+  LCLVersion = '2.0.8.0'
   object pnBottom: TPanel
     Left = 0
     Height = 56

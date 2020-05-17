@@ -3517,6 +3517,7 @@ object fmMain: TfmMain
             OnKeyDown = dbTextKeyDown
             OnKeyUp = dbTextKeyUp
             ParentFont = False
+            PopupMenu = pmText
             ScrollBars = ssAutoVertical
             TabOrder = 0
             WantTabs = True
@@ -3909,6 +3910,32 @@ object fmMain: TfmMain
     end
     object miEdit: TMenuItem
       Caption = 'Edit'
+      object miEditCut: TMenuItem
+        Caption = 'Cut'
+        ShortCut = 4184
+        OnClick = miEditCutClick
+      end
+      object miEditCopy: TMenuItem
+        Caption = 'Copy'
+        ShortCut = 4163
+        OnClick = miEditCopyClick
+      end
+      object miEditPaste: TMenuItem
+        Caption = 'Paste'
+        ShortCut = 4182
+        OnClick = miEditPasteClick
+      end
+      object N34: TMenuItem
+        Caption = '-'
+      end
+      object miEditSelectAll: TMenuItem
+        Caption = 'Select All'
+        ShortCut = 4161
+        OnClick = miEditSelectAllClick
+      end
+      object N26: TMenuItem
+        Caption = '-'
+      end
       object miEditReformat: TMenuItem
         Caption = 'Reformat'
         ShortCut = 4178
@@ -3950,6 +3977,18 @@ object fmMain: TfmMain
         Caption = 'Show bookmarks'
         ShortCut = 4162
         OnClick = miEditBookmarksClick
+      end
+      object N35: TMenuItem
+        Caption = '-'
+      end
+      object miEditCheckSpelling: TMenuItem
+        Caption = 'Check spelling while typing'
+        Checked = True
+        OnClick = miEditCheckSpellingClick
+      end
+      object miEditCheckDocument: TMenuItem
+        Caption = 'Check document now'
+        OnClick = miEditCheckDocumentClick
       end
     end
     object miNotebooks: TMenuItem
@@ -4449,6 +4488,7 @@ object fmMain: TfmMain
   end
   object zqNotes: TZQuery
     Connection = zcConnection
+    BeforeScroll = zqNotesBeforeScroll
     AfterScroll = zqNotesAfterScroll
     UpdateObject = zuNotes
     BeforeInsert = zqNotesBeforeInsert
@@ -6307,6 +6347,41 @@ object fmMain: TfmMain
     object pmInsertTag: TMenuItem
       Caption = 'Insert tag in current note'
       OnClick = pmInsertTagClick
+    end
+  end
+  object pmText: TPopupMenu
+    left = 832
+    top = 310
+    object pmTextCut: TMenuItem
+      Caption = 'Cut'
+      OnClick = miEditCutClick
+    end
+    object pmTextCopy: TMenuItem
+      Caption = 'Copy'
+      OnClick = miEditCopyClick
+    end
+    object pmTextPaste: TMenuItem
+      Caption = 'Paste'
+      OnClick = miEditPasteClick
+    end
+    object N36: TMenuItem
+      Caption = '-'
+    end
+    object pmTextSelectAll: TMenuItem
+      Caption = 'Select all'
+      OnClick = miEditSelectAllClick
+    end
+    object N37: TMenuItem
+      Caption = '-'
+    end
+    object pmTextCheckSpelling: TMenuItem
+      Caption = 'Check spelling while typing'
+      Checked = True
+      OnClick = miEditCheckSpellingClick
+    end
+    object pmTextCheckDocument: TMenuItem
+      Caption = 'Check document now'
+      OnClick = miEditCheckDocumentClick
     end
   end
 end

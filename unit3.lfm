@@ -1,7 +1,7 @@
 object fmSections: TfmSections
-  Left = 518
+  Left = 566
   Height = 400
-  Top = 252
+  Top = 241
   Width = 600
   ActiveControl = dbTitle
   BorderIcons = []
@@ -9,11 +9,10 @@ object fmSections: TfmSections
   Caption = 'Sections'
   ClientHeight = 400
   ClientWidth = 600
-  FormStyle = fsStayOnTop
   OnShow = FormShow
   Position = poScreenCenter
   ShowInTaskBar = stNever
-  LCLVersion = '2.0.6.0'
+  LCLVersion = '2.0.8.0'
   object bnCancel: TButton
     Left = 501
     Height = 33
@@ -34,7 +33,7 @@ object fmSections: TfmSections
   end
   object dbTitle: TDBEdit
     Left = 136
-    Height = 21
+    Height = 22
     Top = 32
     Width = 440
     DataField = 'TITLE'
@@ -56,7 +55,7 @@ object fmSections: TfmSections
   end
   object dbID: TDBEdit
     Left = 32
-    Height = 21
+    Height = 22
     Top = 32
     Width = 80
     DataField = 'ID'
