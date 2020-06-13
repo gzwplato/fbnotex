@@ -3517,7 +3517,6 @@ object fmMain: TfmMain
             OnKeyDown = dbTextKeyDown
             OnKeyUp = dbTextKeyUp
             ParentFont = False
-            PopupMenu = pmText
             ScrollBars = ssAutoVertical
             TabOrder = 0
             WantTabs = True
@@ -3977,18 +3976,6 @@ object fmMain: TfmMain
         Caption = 'Show bookmarks'
         ShortCut = 4162
         OnClick = miEditBookmarksClick
-      end
-      object N35: TMenuItem
-        Caption = '-'
-      end
-      object miEditCheckSpelling: TMenuItem
-        Caption = 'Check spelling while typing'
-        Checked = True
-        OnClick = miEditCheckSpellingClick
-      end
-      object miEditCheckDocument: TMenuItem
-        Caption = 'Check document now'
-        OnClick = miEditCheckDocumentClick
       end
     end
     object miNotebooks: TMenuItem
@@ -6347,41 +6334,6 @@ object fmMain: TfmMain
     object pmInsertTag: TMenuItem
       Caption = 'Insert tag in current note'
       OnClick = pmInsertTagClick
-    end
-  end
-  object pmText: TPopupMenu
-    left = 832
-    top = 310
-    object pmTextCut: TMenuItem
-      Caption = 'Cut'
-      OnClick = miEditCutClick
-    end
-    object pmTextCopy: TMenuItem
-      Caption = 'Copy'
-      OnClick = miEditCopyClick
-    end
-    object pmTextPaste: TMenuItem
-      Caption = 'Paste'
-      OnClick = miEditPasteClick
-    end
-    object N36: TMenuItem
-      Caption = '-'
-    end
-    object pmTextSelectAll: TMenuItem
-      Caption = 'Select all'
-      OnClick = miEditSelectAllClick
-    end
-    object N37: TMenuItem
-      Caption = '-'
-    end
-    object pmTextCheckSpelling: TMenuItem
-      Caption = 'Check spelling while typing'
-      Checked = True
-      OnClick = miEditCheckSpellingClick
-    end
-    object pmTextCheckDocument: TMenuItem
-      Caption = 'Check document now'
-      OnClick = miEditCheckDocumentClick
     end
   end
 end

@@ -81,7 +81,7 @@ msgid "A free software to manage notes and documents"
 msgstr ""
 
 #: tfmcopyright.lbcopyrightname.caption
-msgid "fbNotex 1.2.1.0"
+msgid "fbNotex 1.2.2.0"
 msgstr ""
 
 #: tfmcopyright.lbcopyrightweb.caption
@@ -279,16 +279,6 @@ msgstr ""
 
 #: tfmmain.mieditbookmarks.caption
 msgid "Show bookmarks"
-msgstr ""
-
-#: tfmmain.mieditcheckdocument.caption
-msgctxt "tfmmain.mieditcheckdocument.caption"
-msgid "Check document now"
-msgstr ""
-
-#: tfmmain.mieditcheckspelling.caption
-msgctxt "tfmmain.mieditcheckspelling.caption"
-msgid "Check spelling while typing"
 msgstr ""
 
 #: tfmmain.mieditcopy.caption
@@ -829,36 +819,6 @@ msgctxt "tfmmain.pmsectionsnew.caption"
 msgid "New"
 msgstr ""
 
-#: tfmmain.pmtextcheckdocument.caption
-msgctxt "tfmmain.pmtextcheckdocument.caption"
-msgid "Check document now"
-msgstr ""
-
-#: tfmmain.pmtextcheckspelling.caption
-msgctxt "tfmmain.pmtextcheckspelling.caption"
-msgid "Check spelling while typing"
-msgstr ""
-
-#: tfmmain.pmtextcopy.caption
-msgctxt "tfmmain.pmtextcopy.caption"
-msgid "Copy"
-msgstr ""
-
-#: tfmmain.pmtextcut.caption
-msgctxt "tfmmain.pmtextcut.caption"
-msgid "Cut"
-msgstr ""
-
-#: tfmmain.pmtextpaste.caption
-msgctxt "tfmmain.pmtextpaste.caption"
-msgid "Paste"
-msgstr ""
-
-#: tfmmain.pmtextselectall.caption
-msgctxt "tfmmain.pmtextselectall.caption"
-msgid "Select all"
-msgstr ""
-
 #: tfmmain.sdsavedialog.title
 msgid "Save file"
 msgstr ""
@@ -1007,6 +967,14 @@ msgstr ""
 
 #: tfmoptions.lbfblibpath.caption
 msgid "Firebird library path"
+msgstr ""
+
+#: tfmoptions.lblinespacing.caption
+msgid "Line spacing"
+msgstr ""
+
+#: tfmoptions.lbparaspacing.caption
+msgid "Paragraph spacing"
 msgstr ""
 
 #: tfmoptions.lbpath.caption

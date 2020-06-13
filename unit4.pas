@@ -56,9 +56,11 @@ type
     edPort: TEdit;
     edStSize: TEdit;
     edStSizeTitles: TEdit;
+    lbLineSpacing: TLabel;
     lbBackup: TLabel;
     lbFBgbakPath: TLabel;
     lbFBLibPath: TLabel;
+    lbParaSpacing: TLabel;
     lbServer: TLabel;
     lbPath: TLabel;
     lbPort: TLabel;
@@ -66,6 +68,8 @@ type
     lbStSizeTitles: TLabel;
     lbStMaxChar: TLabel;
     lnStFonts: TLabel;
+    tbLineSpacing: TTrackBar;
+    tbParaSpacing: TTrackBar;
     procedure bnCloseClick(Sender: TObject);
     procedure bnStFontColorDef1Click(Sender: TObject);
     procedure bnStFontColorDefClick(Sender: TObject);
@@ -83,6 +87,8 @@ type
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure FormCreate(Sender: TObject);
     procedure FormShow(Sender: TObject);
+    procedure tbLineSpacingChange(Sender: TObject);
+    procedure tbParaSpacingChange(Sender: TObject);
   private
 
   public
@@ -126,6 +132,8 @@ begin
   end;
   edStSize.Text := IntToStr(fmMain.dbText.Font.Size);
   edStSizeTitles.Text := IntToStr(fmMain.sgTitles.Font.Size);
+  tbLineSpacing.Position := iLineSpacing;
+  tbParaSpacing.Position := iParagraphSpacing;
   edStMaxChar.Text := IntToStr(iSimpleTextFrom);
   edFBLibPath.Text := fmMain.zcConnection.LibraryLocation;
   edFBgbakPath.Text := stGBackDir;
@@ -133,6 +141,20 @@ begin
   edPort.Text := IntToStr(fmMain.zcConnection.Port);
   edPath.Text := fmMain.zcConnection.Database;
   edBackup.Text := stBackupFile;
+end;
+
+procedure TfmOptions.tbLineSpacingChange(Sender: TObject);
+begin
+  iLineSpacing := tbLineSpacing.Position;
+  fmMain.SetLineParagraph;
+  fmMain.FormatMarkers(2);
+end;
+
+procedure TfmOptions.tbParaSpacingChange(Sender: TObject);
+begin
+  iParagraphSpacing := tbParaSpacing.Position;
+  fmMain.SetLineParagraph;
+  fmMain.FormatMarkers(2);
 end;
 
 procedure TfmOptions.FormClose(Sender: TObject; var CloseAction: TCloseAction);

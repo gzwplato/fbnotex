@@ -88,17 +88,6 @@ type
     lbInfo: TLabel;
     lbTitle: TLabel;
     lbID: TLabel;
-    pmTextCut: TMenuItem;
-    pmTextCopy: TMenuItem;
-    pmTextPaste: TMenuItem;
-    pmTextSelectAll: TMenuItem;
-    pmTextCheckSpelling: TMenuItem;
-    pmTextCheckDocument: TMenuItem;
-    N37: TMenuItem;
-    N36: TMenuItem;
-    miEditCheckSpelling: TMenuItem;
-    miEditCheckDocument: TMenuItem;
-    N35: TMenuItem;
     miEditSelectAll: TMenuItem;
     N34: TMenuItem;
     miEditPaste: TMenuItem;
@@ -270,7 +259,6 @@ type
     pmAttachments: TPopupMenu;
     pmTags: TPopupMenu;
     pmLinks: TPopupMenu;
-    pmText: TPopupMenu;
     ppTags: TPopupMenu;
     sdSaveDialog: TSaveDialog;
     shLogin: TShape;
@@ -425,10 +413,8 @@ type
     procedure grTasksKeyDown(Sender: TObject; var Key: word; Shift: TShiftState);
     procedure miEditCopyClick(Sender: TObject);
     procedure miEditCutClick(Sender: TObject);
-    procedure miEditCheckDocumentClick(Sender: TObject);
     procedure miEditPasteClick(Sender: TObject);
     procedure miEditSelectAllClick(Sender: TObject);
-    procedure miEditCheckSpellingClick(Sender: TObject);
     procedure miToolsHideMarColClick(Sender: TObject);
     procedure miEditBookmarksClick(Sender: TObject);
     procedure miEditOpenCurrWriterClick(Sender: TObject);
@@ -540,7 +526,13 @@ type
     function GenID(GenName: string): integer;
     procedure Disconnect;
     function GetDbSize(stDatabase: String): String;
+    function GetDict(txt: NSTextStorage; textOffset: integer): NSDictionary;
     function GetNotexTempDir: String;
+    function GetPara(txt: NSTextStorage; textOffset: integer; isReadOnly,
+      useDefault: Boolean): NSParagraphStyle;
+    function GetSpaceWidth: Integer;
+    function GetWritePara(txt: NSTextStorage; textOffset: integer
+      ): NSMutableParagraphStyle;
     procedure InsText(stText: string);
     function IsHeader(stLine: String): boolean;
     procedure SelectInsertFootnote;
@@ -557,6 +549,7 @@ type
   public
     procedure ListAndFormatTitle;
     procedure FormatMarkers(iAll: SmallInt);
+    procedure SetLineParagraph;
 
   end;
 
@@ -584,6 +577,8 @@ var
   iLastSection: integer = 0;
   iLastNote: integer = 0;
   iSimpleTextFrom: integer = 100000;
+  iLineSpacing: integer = 1;
+  iParagraphSpacing: integer = 1;
   clMarker: TColor = clRed;
   clHighlight: TColor = clGreen;
   clTaskGreen, clTaskBlue: TColor;
@@ -733,6 +728,8 @@ begin
       dbText.Font.Name := MyIni.ReadString('fbnotex', 'fontname', 'Helvetica');
       dbText.Font.Size := MyIni.ReadInteger('fbnotex', 'fontsize', 12);
       sgTitles.Font.Size := MyIni.ReadInteger('fbnotex', 'fonttitlessize', 12);
+      iLineSpacing := MyIni.ReadInteger('fbnotex', 'linespacing', 1);
+      iParagraphSpacing := MyIni.ReadInteger('fbnotex', 'paragraphspacing', 1);
       iSimpleTextFrom := MyIni.ReadInteger('fbnotex', 'simpletxtfrom', 100000);
       if MyIni.ReadInteger('fbnotex', 'hidemarkcol', 0) = 1 then
       begin
@@ -851,6 +848,8 @@ begin
     MyIni.WriteString('fbnotex', 'fontname', dbText.Font.Name);
     MyIni.WriteInteger('fbnotex', 'fontsize', dbText.Font.Size);
     MyIni.WriteInteger('fbnotex', 'fonttitlessize', sgTitles.Font.Size);
+    MyIni.WriteInteger('fbnotex', 'linespacing', iLineSpacing);
+    MyIni.WriteInteger('fbnotex', 'paragraphspacing', iParagraphSpacing);
     MyIni.WriteString('fbnotex', 'fontcolor', ColorToString(dbText.Font.Color));
     MyIni.WriteString('fbnotex', 'marker', ColorToString(clMarker));
     MyIni.WriteString('fbnotex', 'highlight', ColorToString(clHighlight));
@@ -892,15 +891,13 @@ begin
   fmOptions.edPath.Text := zcConnection.Database;
   fmOptions.edBackup.Text := stBackupFile;
   TCocoaTextView(NSScrollView(dbText.Handle).documentView).
-    setRichText(True);
+    setRichText(False);
   TCocoaTextView(NSScrollView(dbText.Handle).documentView).
     setContinuousSpellCheckingEnabled(True);
   TCocoaTextView(NSScrollView(dbText.Handle).documentView).
     textContainer.setLineFragmentPadding(30);
   TCocoaTextView(NSScrollView(dbText.Handle).documentView).
     setFocusRingType(1);
-  TCocoaTextView(NSScrollView(dbText.Handle).documentView).
-    setAutomaticDashSubstitutionEnabled(True);
   TCocoaTextView(NSScrollView(dbText.Handle).documentView).
     setAutomaticQuoteSubstitutionEnabled(True);
   TCocoaTextView(NSScrollView(dbText.Handle).documentView).
@@ -1062,6 +1059,7 @@ begin
       zqNotes.CancelUpdates;
       dbText.Text := zqNotesTEXT.Value;
       dbText.SelStart := 0;
+      SetLineParagraph;
       ListAndFormatTitle;
       FormatMarkers(2);
     end;
@@ -1130,14 +1128,19 @@ begin
       FormatMarkers(2);
       dbText.SelStart := iPos;
     end;
-    if ((dbText.Lines[dbText.CaretPos.Y - 1] = '* ') or
-      (dbText.Lines[dbText.CaretPos.Y - 1] = '- ') or
-      (dbText.Lines[dbText.CaretPos.Y - 1] = '+ ') or
+    if ((dbText.Lines[dbText.CaretPos.Y - 1] = '*'#9) or
+      (dbText.Lines[dbText.CaretPos.Y - 1] = '-'#9) or
+      (dbText.Lines[dbText.CaretPos.Y - 1] = '+'#9) or
+      (dbText.Lines[dbText.CaretPos.Y - 1] = '*'#9' ') or
+      (dbText.Lines[dbText.CaretPos.Y - 1] = '-'#9' ') or
+      (dbText.Lines[dbText.CaretPos.Y - 1] = '+'#9' ') or
       ((UTF8Length(dbText.Lines[dbText.CaretPos.Y - 1]) < 5) and
+      ((UTF8Copy(dbText.Lines[dbText.CaretPos.Y - 1],
+      UTF8Length(dbText.Lines[dbText.CaretPos.Y - 1]), 1) = #9) or
       (UTF8Copy(dbText.Lines[dbText.CaretPos.Y - 1],
-      UTF8Length(dbText.Lines[dbText.CaretPos.Y - 1]), 1) = ' ') and
-      ((UTF8Copy(dbText.Lines[dbText.CaretPos.Y - 1], 2, 2) = '. ') or
-      (UTF8Copy(dbText.Lines[dbText.CaretPos.Y - 1], 3, 2) = '. ')))) then
+      UTF8Length(dbText.Lines[dbText.CaretPos.Y - 1]), 1) = ' ')) and
+      ((UTF8Copy(dbText.Lines[dbText.CaretPos.Y - 1], 2, 2) = '.'#9) or
+      (UTF8Copy(dbText.Lines[dbText.CaretPos.Y - 1], 3, 2) = '.'#9)))) then
     begin
       dbText.Lines[dbText.CaretPos.Y - 1] := '';
       FormatMarkers(2);
@@ -1146,60 +1149,117 @@ begin
       dbText.SelStart := dbText.SelStart + 1;
     end
     else
-    if ((UTF8Copy(dbText.Lines[dbText.CaretPos.Y - 1], 1, 2) = '* ') and
-      (UTF8Length(dbText.Lines[dbText.CaretPos.Y - 1]) > 2)) then
+    if ((UTF8Copy(dbText.Lines[dbText.CaretPos.Y - 1], 1, 3) = '*'#9' ') and
+      (UTF8Length(dbText.Lines[dbText.CaretPos.Y - 1]) > 3)) then
     begin
       if dbText.SelStart = UTF8Length(dbText.Text) then
       begin
-        InsText('* ' + LineEnding);
+        InsText('*'#9' ' + LineEnding);
         dbText.SelStart := dbText.SelStart - UTF8Length(LineEnding);
       end
       else
       begin
-        InsText('* ');
+        InsText('*'#9' ');
       end;
     end
     else
-    if ((UTF8Copy(dbText.Lines[dbText.CaretPos.Y - 1], 1, 2) = '- ') and
+    if ((UTF8Copy(dbText.Lines[dbText.CaretPos.Y - 1], 1, 2) = '*'#9) and
       (UTF8Length(dbText.Lines[dbText.CaretPos.Y - 1]) > 2)) then
     begin
       if dbText.SelStart = UTF8Length(dbText.Text) then
       begin
-        InsText('- ' + LineEnding);
+        InsText('*'#9 + LineEnding);
         dbText.SelStart := dbText.SelStart - UTF8Length(LineEnding);
       end
       else
       begin
-        InsText('- ');
+        InsText('*'#9);
       end;
     end
     else
-    if ((UTF8Copy(dbText.Lines[dbText.CaretPos.Y - 1], 1, 2) = '+ ') and
-      (UTF8Length(dbText.Lines[dbText.CaretPos.Y - 1]) > 2)) then
+    if ((UTF8Copy(dbText.Lines[dbText.CaretPos.Y - 1], 1, 3) = '-'#9' ') and
+      (UTF8Length(dbText.Lines[dbText.CaretPos.Y - 1]) > 3)) then
     begin
       if dbText.SelStart = UTF8Length(dbText.Text) then
       begin
-        InsText('+ ' + LineEnding);
+        InsText('-'#9' ' + LineEnding);
         dbText.SelStart := dbText.SelStart - UTF8Length(LineEnding);
       end
       else
       begin
-        InsText('+ ');
+        InsText('-'#9' ');
+      end;
+    end
+    else
+    if ((UTF8Copy(dbText.Lines[dbText.CaretPos.Y - 1], 1, 2) = '-'#9) and
+      (UTF8Length(dbText.Lines[dbText.CaretPos.Y - 1]) > 2)) then
+    begin
+      if dbText.SelStart = UTF8Length(dbText.Text) then
+      begin
+        InsText('-'#9 + LineEnding);
+        dbText.SelStart := dbText.SelStart - UTF8Length(LineEnding);
+      end
+      else
+      begin
+        InsText('-'#9);
+      end;
+    end
+    else
+    if ((UTF8Copy(dbText.Lines[dbText.CaretPos.Y - 1], 1, 3) = '+'#9' ') and
+      (UTF8Length(dbText.Lines[dbText.CaretPos.Y - 1]) > 3)) then
+    begin
+      if dbText.SelStart = UTF8Length(dbText.Text) then
+      begin
+        InsText('+'#9' ' + LineEnding);
+        dbText.SelStart := dbText.SelStart - UTF8Length(LineEnding);
+      end
+      else
+      begin
+        InsText('+'#9' ');
+      end;
+    end
+    else
+    if ((UTF8Copy(dbText.Lines[dbText.CaretPos.Y - 1], 1, 2) = '+'#9) and
+      (UTF8Length(dbText.Lines[dbText.CaretPos.Y - 1]) > 2)) then
+    begin
+      if dbText.SelStart = UTF8Length(dbText.Text) then
+      begin
+        InsText('+'#9 + LineEnding);
+        dbText.SelStart := dbText.SelStart - UTF8Length(LineEnding);
+      end
+      else
+      begin
+        InsText('+'#9);
       end;
     end
     else
     if TryStrToInt(
       UTF8Copy(dbText.Lines[dbText.CaretPos.Y - 1], 1,
-      UTF8Pos('.', dbText.Lines[dbText.CaretPos.Y - 1]) - 1), iNum) = True then
+      UTF8Pos('.'#9' ', dbText.Lines[dbText.CaretPos.Y - 1]) - 1), iNum) = True then
     begin
       if dbText.SelStart = UTF8Length(dbText.Text) then
       begin
-        InsText(IntToStr(iNum + 1) + '. ' + LineEnding);
+        InsText(IntToStr(iNum + 1) + '.'#9' ' + LineEnding);
         dbText.SelStart := dbText.SelStart - UTF8Length(LineEnding);
       end
       else
       begin
-        InsText(IntToStr(iNum + 1) + '. ');
+        InsText(IntToStr(iNum + 1) + '.'#9' ');
+      end;
+    end
+    else
+    if TryStrToInt(
+      UTF8Copy(dbText.Lines[dbText.CaretPos.Y - 1], 1,
+      UTF8Pos('.'#9, dbText.Lines[dbText.CaretPos.Y - 1]) - 1), iNum) = True then
+    begin
+      if dbText.SelStart = UTF8Length(dbText.Text) then
+      begin
+        InsText(IntToStr(iNum + 1) + '.'#9 + LineEnding);
+        dbText.SelStart := dbText.SelStart - UTF8Length(LineEnding);
+      end
+      else
+      begin
+        InsText(IntToStr(iNum + 1) + '.'#9);
       end;
     end;
   end;
@@ -1946,30 +2006,6 @@ begin
       MessageDlg(msg048, mtWarning, [mbOK], 0);
     end;
   end;
-end;
-
-procedure TfmMain.miEditCheckSpellingClick(Sender: TObject);
-begin
-  miEditCheckSpelling.Checked := not miEditCheckSpelling.Checked;
-  pmTextCheckSpelling.Checked := not pmTextCheckSpelling.Checked;
-  if miEditCheckSpelling.Checked = True then
-  begin
-    TCocoaTextView(NSScrollView(dbText.Handle).documentView).
-      setContinuousSpellCheckingEnabled(True);
-  end
-  else
-  begin
-    TCocoaTextView(NSScrollView(dbText.Handle).documentView).
-      setContinuousSpellCheckingEnabled(False);
-  end;
-end;
-
-procedure TfmMain.miEditCheckDocumentClick(Sender: TObject);
-begin
-  TCocoaTextView(NSScrollView(dbText.Handle).documentView).
-    moveWordBackwardAndModifySelection(nil);
-  TCocoaTextView(NSScrollView(dbText.Handle).documentView).
-    showGuessPanel(nil);
 end;
 
 procedure TfmMain.miNotebooksNewClick(Sender: TObject);
@@ -2925,6 +2961,7 @@ begin
 end;
 
 procedure TfmMain.miToolsRestoreClick(Sender: TObject);
+  var myFormat: String;
 begin
   if FileExistsUTF8(stBackupFile) = False then
   begin
@@ -2933,7 +2970,15 @@ begin
   end
   else
   begin
-    if MessageDlg(msg010 + ' ' + formatDateTime('dddddd "' +
+    if dateformat = 'en' then
+    begin
+      myFormat := 'dddd mmmm dd yyyy';
+    end
+    else
+    begin
+      myFormat := 'dddd dd mmmm yyyy';
+    end;
+    if MessageDlg(msg010 + ' ' + formatDateTime(myFormat + ' "' +
       msg011 + '" hh.nn', FileDateToDateTime(FileAgeUTF8(stBackupFile))) +
       ' (' + GetDbSize(stBackupFile) + ')?',
       mtConfirmation, [mbOK, mbCancel], 0) = mrOk then
@@ -3053,8 +3098,6 @@ begin
     TCocoaTextView(NSScrollView(dbText.Handle).documentView).
       setContinuousSpellCheckingEnabled(True);
     TCocoaTextView(NSScrollView(dbText.Handle).documentView).
-      setAutomaticDashSubstitutionEnabled(True);
-    TCocoaTextView(NSScrollView(dbText.Handle).documentView).
       setAutomaticQuoteSubstitutionEnabled(True);
     TCocoaTextView(NSScrollView(dbText.Handle).documentView).
       setSmartInsertDeleteEnabled(True);
@@ -3063,11 +3106,9 @@ begin
   begin
     blHideMarCol := False;
     TCocoaTextView(NSScrollView(dbText.Handle).documentView).
-      setRichText(True);
+      setRichText(False);
     TCocoaTextView(NSScrollView(dbText.Handle).documentView).
       setContinuousSpellCheckingEnabled(True);
-    TCocoaTextView(NSScrollView(dbText.Handle).documentView).
-      setAutomaticDashSubstitutionEnabled(True);
     TCocoaTextView(NSScrollView(dbText.Handle).documentView).
       setAutomaticQuoteSubstitutionEnabled(True);
     TCocoaTextView(NSScrollView(dbText.Handle).documentView).
@@ -3277,6 +3318,7 @@ begin
   if zqNotes.RecordCount > 0 then
   begin
     dbText.Text := zqNotesTEXT.Value;
+    SetLineParagraph;
     if UTF8Length(dbText.Text) > iSimpleTextFrom then
     begin
       if miToolsHideMarCol.Checked = False then
@@ -3559,8 +3601,6 @@ begin
   miEditOpenCurrWriter.Enabled := False;
   miEditOpenAllWriter.Enabled := False;
   miEditBookmarks.Enabled := False;
-  miEditCheckSpelling.Enabled := False;
-  miEditCheckDocument.Enabled := False;
   miNotebooksNew.Enabled := False;
   miNotebooksDelete.Enabled := False;
   miNotebooksSortby.Enabled := False;
@@ -3658,6 +3698,10 @@ begin
   begin
     lbBackup.Visible := False;
   end;
+  if fmMain.Visible = True then
+  begin
+    fmMain.Refresh;
+  end;
 end;
 
 procedure TfmMain.Connect;
@@ -3700,8 +3744,6 @@ begin
   miEditOpenCurrWriter.Enabled := True;
   miEditOpenAllWriter.Enabled := True;
   miEditBookmarks.Enabled := True;
-  miEditCheckSpelling.Enabled := True;
-  miEditCheckDocument.Enabled := True;
   miNotebooksNew.Enabled := True;
   miNotebooksDelete.Enabled := True;
   miNotebooksSortby.Enabled := True;
@@ -4103,7 +4145,7 @@ end;
 function TfmMain.CopyAsHTML(smOutput:SmallInt; blAll: Boolean): string;
 var
   myOrigText, myText, myFootnotes: TStringList;
-  blNumList, blBulList, blQuote, blCode, blLink, blTable: boolean;
+  blNumList1, blNumList2, blBulList1, blBulList2, blQuote, blCode, blLink, blTable: boolean;
   i, n, iTemp, iTask, iLink: integer;
   stLine, stStartDate, stEndDate, stFootnote, stPicture,
   stLink, stTextLink: string;
@@ -4113,8 +4155,10 @@ begin
   myText := TStringList.Create;
   myOrigText := TStringList.Create;
   myFootnotes := TStringList.Create;
-  blNumList := False;
-  blBulList := False;
+  blNumList1 := False;
+  blNumList2 := False;
+  blBulList1 := False;
+  blBulList2 := False;
   blQuote := False;
   blCode := False;
   blTable := False;
@@ -4149,38 +4193,91 @@ begin
           stLine := '>' + UTF8copy(stLine, 2, UTF8Length(stLine));
         end;
         // Start lists
-        if ((UTF8Copy(stLine, 1, 2) = '* ') or
-          (UTF8Copy(stLine, 1, 2) = '- ') or (UTF8Copy(stLine, 1, 2) = '+ ')) then
+        if (((UTF8Copy(stLine, 1, 2) = '*'#9) or
+          (UTF8Copy(stLine, 1, 2) = '-'#9) or
+          (UTF8Copy(stLine, 1, 2) = '+'#9)) and
+          (UTF8Copy(stLine, 3, 1) <> ' ')) then
         begin
-          if blBulList = False then
+          if blBulList1 = False then
           begin
             myText.Add('<ul>');
-            blBulList := True;
+            blBulList1 := True;
           end;
         end
         else
         begin
-          if blBulList = True then
+          if blBulList1 = True then
+          begin
+            if ((TryStrToInt(UTF8Copy(stLine, 1,
+              UTF8Pos('.'#9' ', stLine) - 1), iTemp) = False) and
+              (UTF8Copy(stLine, 1, 3) <> '*'#9' ') and
+              (UTF8Copy(stLine, 1, 3) <> '+'#9' ') and
+              (UTF8Copy(stLine, 1, 3) <> '-'#9' ')) then
+            begin
+              myText.Add('</ul>');
+              blBulList1 := False;
+            end;
+          end;
+        end;
+        if ((UTF8Copy(stLine, 1, 3) = '*'#9' ') or
+          (UTF8Copy(stLine, 1, 3) = '-'#9' ') or
+          (UTF8Copy(stLine, 1, 3) = '+'#9' ')) then
+        begin
+          if blBulList2 = False then
+          begin
+            myText.Add('<ul>');
+            blBulList2 := True;
+          end;
+        end
+        else
+        begin
+          if blBulList2 = True then
           begin
             myText.Add('</ul>');
-            blBulList := False;
+            blBulList2 := False;
           end;
         end;
         if ((UTF8Length(stLine) > 0) and
-          (TryStrToInt(UTF8Copy(stLine, 1, UTF8Pos('.', stLine) - 1), iTemp))) then
+          (TryStrToInt(UTF8Copy(stLine, 1, UTF8Pos('.'#9' ',
+            stLine) - 1), iTemp))) then
         begin
-          if blNumList = False then
+          if blNumList2 = False then
           begin
             myText.Add('<ol>');
-            blNumList := True;
+            blNumList2 := True;
           end;
         end
         else
         begin
-          if blNumList = True then
+          if blNumList2 = True then
           begin
             myText.Add('</ol>');
-            blNumList := False;
+            blNumList2 := False;
+          end;
+          if ((UTF8Length(stLine) > 0) and
+            (TryStrToInt(UTF8Copy(stLine, 1,
+            UTF8Pos('.'#9, stLine) - 1), iTemp))) then
+          begin
+            if blNumList1 = False then
+            begin
+              myText.Add('<ol>');
+              blNumList1 := True;
+            end;
+          end
+          else
+          begin
+            if blNumList1 = True then
+            begin
+              if ((UTF8Copy(stLine, 1, 3) <> '*'#9' ') and
+                (UTF8Copy(stLine, 1, 3) <> '-'#9' ') and
+                (UTF8Copy(stLine, 1, 3) <> '+'#9' ') and
+                (TryStrToInt(UTF8Copy(stLine, 1,
+                UTF8Pos('.'#9' ', stLine) - 1), iTemp) = False)) then
+              begin
+                myText.Add('</ol>');
+                blNumList1 := False;
+              end;
+            end;
           end;
         end;
         // Header
@@ -4279,8 +4376,9 @@ begin
           myText.Add('<h1>' + stLine + '</h1>');
         end
         // Lists quotes and code
-        else if ((UTF8Copy(stLine, 1, 2) = '* ') or (UTF8Copy(stLine, 1, 2) = '- ') or
-          (UTF8Copy(stLine, 1, 2) = '+ ')) then
+        else if ((UTF8Copy(stLine, 1, 2) = '*'#9) or
+          (UTF8Copy(stLine, 1, 2) = '-'#9) or
+          (UTF8Copy(stLine, 1, 2) = '+'#9)) then
         begin
           stLine := UTF8Copy(stLine, 3, UTF8Length(stLine));
           myText.Add('<li>' + stLine + '</li>');
@@ -4334,11 +4432,19 @@ begin
         end;
         Application.ProcessMessages;
       end;
-      if blBulList = True then
+      if blBulList1 = True then
       begin
         myText.Add('</ul>');
       end;
-      if blNumList = True then
+      if blBulList2 = True then
+      begin
+        myText.Add('</ul>');
+      end;
+      if blNumList1 = True then
+      begin
+        myText.Add('</ol>');
+      end;
+      if blNumList2 = True then
       begin
         myText.Add('</ol>');
       end;
@@ -4664,7 +4770,16 @@ begin
         begin
           if zqImpExpTasksSTART_DATE.IsNull = False then
           begin
-            stStartDate := FormatDateTime('dddddd', zqImpExpTasksSTART_DATE.Value);
+            if dateformat = 'en' then
+            begin
+              stStartDate := FormatDateTime('dddd mmmm dd yyyy',
+                zqImpExpTasksSTART_DATE.Value);
+            end
+            else
+            begin
+              stStartDate := FormatDateTime('dddd dd mmmm yyyy',
+                zqImpExpTasksSTART_DATE.Value);
+            end;
           end
           else
           begin
@@ -4672,7 +4787,16 @@ begin
           end;
           if zqImpExpTasksEND_DATE.IsNull = False then
           begin
-            stEndDate := FormatDateTime('dddddd', zqImpExpTasksEND_DATE.Value);
+            if dateformat = 'en' then
+            begin
+              stStartDate := FormatDateTime('dddd mmmm dd yyyy',
+                zqImpExpTasksEND_DATE.Value);
+            end
+            else
+            begin
+              stStartDate := FormatDateTime('dddd dd mmmm yyyy',
+                zqImpExpTasksEND_DATE.Value);
+            end;
           end
           else
           begin
@@ -4852,12 +4976,52 @@ begin
   end;
 end;
 
+procedure TfmMain.SetLineParagraph;
+  var
+    iTab: integer;
+    rng: NSRange;
+    par: NSMutableParagraphStyle;
+    tabs: NSMutableArray;
+    tab: NSTextTab;
+begin
+  if dbText.Text = '' then
+  begin
+    Exit;
+  end;
+  par := GetWritePara(TCocoaTextView(NSScrollView(dbText.Handle).
+    documentView).textStorage, 1);
+  rng.location := 0;
+  rng.length:= UTF8Length(dbText.Text) - 1;
+  par.setParagraphSpacing(iParagraphSpacing);
+  par.setLineSpacing(iLineSpacing);
+  tabs := NSMutableArray.alloc.init;
+  for iTab := 1 to 10 do
+  begin
+    if iTab = 3 then
+    begin
+      tab := NSTextTab.alloc.initWithType_location(NSLeftTabStopType,
+        iTab * 50 - GetSpaceWidth);
+    end
+    else
+    begin
+      tab := NSTextTab.alloc.initWithType_location(NSLeftTabStopType, iTab * 50);
+    end;
+    tabs.addObject(tab);
+    tab.release;
+  end;
+  par.setTabStops(tabs);
+  TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+    textStorage.addAttribute_value_range(NSParagraphStyleAttributeName,
+    par, rng);
+end;
+
 procedure TfmMain.FormatMarkers(iAll: SmallInt);
 var
   iPos, iPosLine, iPosCode, i, iTest: integer;
   blCode, blLineCode: boolean;
   stLine: String;
   rng: NSRange;
+  par: NSMutableParagraphStyle;
 begin
   if blHideMarCol = True then
   begin
@@ -5106,12 +5270,10 @@ begin
           setTextColor_range(ColorToNSColor(clMarker), rng);
         if UTF8Pos(')', stLine, iPosLine) > 0 then
         begin
-
           rng.location := iPos + iPosLine;
           rng.length := UTF8Pos(')', stLine, iPosLine) - iPosLine;
           TCocoaTextView(NSScrollView(dbText.Handle).documentView).
             setTextColor_range(ColorToNSColor(dbText.Font.Color), rng);
-
           rng.location := iPos + UTF8Pos(')', stLine, iPosLine) - 1;
           rng.length := 1;
           TCocoaTextView(NSScrollView(dbText.Handle).documentView).
@@ -5153,7 +5315,7 @@ begin
       iPosLine := UTF8Pos('.', stLine);
       if ((TryStrToInt(UTF8Copy(stLine, 1, iPosLine - 1), iTest) = True) and
         (UTF8copy(stLine, 1, 1) <> ' ') and
-        (UTF8Copy(stLine, iPosLine + 1, 1) = ' ') and
+        (UTF8Copy(stLine, iPosLine + 1, 1) = #9) and
         (UTF8Copy(stLine, iPosLine - 1, 1) <> ' ')) then
       begin
         rng.location := iPos;
@@ -5178,7 +5340,7 @@ begin
     while UTF8Pos('+', stLine, iPosLine) > 0 do
     begin
       iPosLine := UTF8Pos('+', stLine, iPosLine);
-      if ((iPosLine = 1) and (UTF8Copy(stLine, 2, 1) = ' ')) then
+      if ((iPosLine = 1) and (UTF8Copy(stLine, 2, 1) = #9)) then
       begin
         rng.location := iPos + iPosLine - 1;
         rng.length := 1;
@@ -5191,7 +5353,7 @@ begin
     while UTF8Pos('-', stLine, iPosLine) > 0 do
     begin
       iPosLine := UTF8Pos('-', stLine, iPosLine);
-      if ((iPosLine = 1) and (UTF8Copy(stLine, 2, 1) = ' ')) then
+      if ((iPosLine = 1) and (UTF8Copy(stLine, 2, 1) = #9)) then
       begin
         rng.location := iPos + iPosLine - 1;
         rng.length := 1;
@@ -5218,6 +5380,37 @@ begin
           setTextColor_range(ColorToNSColor(clMarker), rng);
       end;
     end;
+    par := GetWritePara(TCocoaTextView(NSScrollView(dbText.Handle).
+      documentView).textStorage, 1);
+    if ((UTF8Copy(stLine, 1, 3) = '*'#9' ') or
+      (UTF8Copy(stLine, 1, 3) = '+'#9' ') or
+      (UTF8Copy(stLine, 1, 3) = '-'#9' ') or
+      (UTF8Copy(stLine, 2, 3) = '.'#9' ') or
+      (UTF8Copy(stLine, 3, 3) = '.'#9' ')) then
+    begin
+      par.setFirstLineHeadIndent(100);
+      par.setHeadIndent(150);
+    end
+    else
+    if ((UTF8Copy(stLine, 1, 2) = '*'#9) or
+      (UTF8Copy(stLine, 1, 2) = '+'#9) or
+      (UTF8Copy(stLine, 1, 2) = '-'#9) or
+      (UTF8Copy(stLine, 2, 2) = '.'#9) or
+      (UTF8Copy(stLine, 3, 2) = '.'#9)) then
+    begin
+      par.setFirstLineHeadIndent(50);
+      par.setHeadIndent(100);
+    end
+    else
+    begin
+      par.setFirstLineHeadIndent(0);
+      par.setHeadIndent(0);
+    end;
+    rng.location := iPos;
+    rng.length:= UTF8Length(dbText.Lines[i]);
+    TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+      textStorage.addAttribute_value_range(NSParagraphStyleAttributeName,
+      par, rng);
     iPos := iPos + UTF8Length(dbText.Lines[i]) + UTF8Length(LineEnding);
   end;
 end;
@@ -5251,29 +5444,53 @@ begin
 end;
 
 procedure TfmMain.RenumberList;
-  var i, iTest, iNum: integer;
-    blIsList: boolean;
+  var i, iTest, iNum1, iNum2: integer;
+    blIsList1, blIsList2: boolean;
 begin
-  blIsList := False;
-  iNum := 1;
+  blIsList1 := False;
+  blIsList2 := False;
+  iNum1 := 1;
+  iNum2 := 1;
   for i := 0 to dbText.Lines.Count - 1 do
   begin
     if TryStrToInt(UTF8Copy(dbText.Lines[i], 1,
-      UTF8Pos('.', dbText.Lines[i]) - 1), iTest) = True then
+      UTF8Pos('.'#9' ', dbText.Lines[i]) - 1), iTest) = True then
+    begin
+      if blIsList2 = False then
       begin
-        if blIsList = False then
-        begin
-          iNum := 1;
-          blIsList := True;
-        end;
-        dbText.Lines[i] := IntToStr(iNum) +
-          (UTF8Copy(dbText.Lines[i], UTF8Pos('.', dbText.Lines[i]),
-          UTF8Length(dbText.Lines[i])));
-        Inc(iNum);
-      end
+        iNum2 := 1;
+        blIsList2 := True;
+      end;
+      dbText.Lines[i] := IntToStr(iNum2) +
+        (UTF8Copy(dbText.Lines[i], UTF8Pos('.', dbText.Lines[i]),
+        UTF8Length(dbText.Lines[i])));
+      Inc(iNum2);
+    end
     else
     begin
-      blIsList := False;
+      blIsList2 := False;
+      if TryStrToInt(UTF8Copy(dbText.Lines[i], 1,
+        UTF8Pos('.'#9, dbText.Lines[i]) - 1), iTest) = True then
+      begin
+        if blIsList1 = False then
+        begin
+          iNum1 := 1;
+          blIsList1 := True;
+        end;
+        dbText.Lines[i] := IntToStr(iNum1) +
+          (UTF8Copy(dbText.Lines[i], UTF8Pos('.', dbText.Lines[i]),
+          UTF8Length(dbText.Lines[i])));
+        Inc(iNum1);
+      end
+      else
+      begin
+        if ((UTF8Copy(dbText.Lines[i], 1, 3) <> '*'#9' ') and
+          (UTF8Copy(dbText.Lines[i], 1, 3) <> '+'#9' ') and
+          (UTF8Copy(dbText.Lines[i], 1, 3) <> '-'#9' ')) then
+        begin
+          blIsList1 := False;
+        end;
+      end;
     end;
   end;
 end;
@@ -5409,8 +5626,9 @@ begin
 end;
 
 procedure TfmMain.SetLists;
-  var i, iStart, iEnd, iNum, iPos: integer;
+  var i, iStart, iEnd, iNum1, iNum2, iPos: integer;
     stHeader: String;
+    blInd: boolean;
 begin
   iPos := dbText.SelStart - dbText.CaretPos.x;
   iStart := dbText.CaretPos.y;
@@ -5439,12 +5657,12 @@ begin
   stHeader := UTF8Copy(dbText.Lines[iStart], 1, 1);
   if stHeader = '*' then
   begin
-    stHeader := '+ ';
+    stHeader := '+';
   end
   else
   if stHeader = '+' then
   begin
-    stHeader := '- ';
+    stHeader := '-';
   end
   else
   if stHeader = '-' then
@@ -5458,35 +5676,55 @@ begin
   end
   else
   begin
-    stHeader := '* ';
+    stHeader := '*';
   end;
   if stHeader = '1' then
   begin
-    iNum := 1;
+    iNum1 := 1;
+    iNum2 := 1;
     for i := iStart to iEnd do
     begin
-      if ((UTF8Copy(dbText.Lines[i], 2, 1) = '.') or
-        (UTF8Copy(dbText.Lines[i], 3, 1) = '.')) then
+      if ((UTF8Copy(dbText.Lines[i], 1, 3) = '*'#9' ') or
+        (UTF8Copy(dbText.Lines[i], 1, 3) = '+'#9' ') or
+        (UTF8Copy(dbText.Lines[i], 1, 3) = '-'#9' ')) then
       begin
-        dbText.Lines[i] := IntToStr(iNum) + ' .' +
-          UTF8Copy(dbText.Lines[i], UTF8Pos('.', dbText.Lines[i]) + 2,
-          UTF8Length(dbText.Lines[i]));
-      end
-      else
-      if ((UTF8Copy(dbText.Lines[i], 1, 1) = '*') or
-        (UTF8Copy(dbText.Lines[i], 1, 1) = '+') or
-        (UTF8Copy(dbText.Lines[i], 1, 1) = '-')) then
-      begin
-        dbText.Lines[i] := IntToStr(iNum) + '. ' +
+        blInd := True;
+        dbText.Lines[i] := IntToStr(iNum2) + '.' + #9 +
           UTF8Copy(dbText.Lines[i], 3, UTF8Length(dbText.Lines[i]));
+        Inc(iNum2);
+        iPos := iPos + UTF8Length(IntToStr(iNum2)) + 2;
       end
       else
       begin
-        dbText.Lines[i] := IntToStr(iNum) + ' .' + dbText.Lines[i];
+        if blInd = True then
+        begin
+          blInd := False;
+          iNum2 := 1;
+        end;
+        if ((UTF8Copy(dbText.Lines[i], 1, 2) = '*'#9) or
+          (UTF8Copy(dbText.Lines[i], 1, 2) = '+'#9) or
+          (UTF8Copy(dbText.Lines[i], 1, 2) = '-'#9)) then
+        begin
+          dbText.Lines[i] := IntToStr(iNum1) + '.' + #9 +
+            UTF8Copy(dbText.Lines[i], 3, UTF8Length(dbText.Lines[i]));
+        end
+        else
+        begin
+          dbText.Lines[i] := IntToStr(iNum1) + '.' + #9 + dbText.Lines[i];
+        end;
+        Inc(iNum1);
+        iPos := iPos + UTF8Length(IntToStr(iNum1)) + 2;
       end;
-      Inc(iNum);
     end;
-    iPos := iPos + UTF8Length(IntToStr(iNum)) + 2;
+  end
+  else
+  if stHeader = '' then
+  begin
+    for i := iStart to iEnd do
+    begin
+      dbText.Lines[i] := UTF8Copy(dbText.Lines[i], UTF8Pos(#9, dbText.Lines[i]) + 1,
+        UTF8Length(dbText.Lines[i]));
+    end;
   end
   else
   begin
@@ -5495,7 +5733,7 @@ begin
       if ((UTF8Copy(dbText.Lines[i], 2, 1) = '.') or
         (UTF8Copy(dbText.Lines[i], 3, 1) = '.')) then
       begin
-        dbText.Lines[i] := stHeader +
+        dbText.Lines[i] := stHeader + #9 +
           UTF8Copy(dbText.Lines[i], UTF8Pos('.', dbText.Lines[i]) + 2,
           UTF8Length(dbText.Lines[i]));
       end
@@ -5504,12 +5742,12 @@ begin
         (UTF8Copy(dbText.Lines[i], 1, 1) = '+') or
         (UTF8Copy(dbText.Lines[i], 1, 1) = '-')) then
       begin
-        dbText.Lines[i] := stHeader +
+        dbText.Lines[i] := stHeader + #9 +
           UTF8Copy(dbText.Lines[i], 3, UTF8Length(dbText.Lines[i]));
       end
       else
       begin
-        dbText.Lines[i] := stHeader + dbText.Lines[i];
+        dbText.Lines[i] := stHeader + #9 + dbText.Lines[i];
       end;
     end;
     iPos := iPos + Utf8Length(stHeader);
@@ -5657,6 +5895,60 @@ begin
     Close;
     Sql.Clear;
   end;
+end;
+
+function TfmMain.GetSpaceWidth: Integer;
+var
+  bmp: TBitmap;
+begin
+  Result := 0;
+  bmp := TBitmap.Create;
+  try
+    bmp.Canvas.Font.Assign(dbText.Font);
+    Result := bmp.Canvas.TextWidth(' ');
+  finally
+    bmp.Free;
+  end;
+end;
+
+// Source code taken from wiki.freepascal.org/RichMemo
+
+function TfmMain.GetPara(txt: NSTextStorage; textOffset:
+  integer; isReadOnly, useDefault: Boolean): NSParagraphStyle;
+var
+  dict: NSDictionary;
+  op: NSParagraphStyle;
+begin
+  Result := nil;
+  if not Assigned(txt) then Exit;
+  dict := GetDict(txt, textOffset);
+  op := nil;
+  if Assigned(dict) then
+    op := NSParagraphStyle(dict.objectForKey(NSParagraphStyleAttributeName));
+  if not Assigned(op) then
+  begin
+    if not useDefault then Exit;
+    op := NSParagraphStyle.defaultParagraphStyle;
+  end;
+  if isReadOnly then
+    Result := op
+  else
+    Result := op.mutableCopyWithZone(nil)
+end;
+
+function TfmMain.GetWritePara(txt: NSTextStorage; textOffset: integer):
+  NSMutableParagraphStyle;
+begin
+  Result := NSMutableParagraphStyle(GetPara(txt, textOffset, false, true));
+end;
+
+function TfmMain.GetDict(txt: NSTextStorage; textOffset: integer): NSDictionary;
+begin
+  if textOffset >= txt.string_.length then
+  begin
+    textOffset := txt.string_.length - 1;
+  end;
+  Result := txt.attributesAtIndex_effectiveRange(textOffset, nil);
 end;
 
 end.
