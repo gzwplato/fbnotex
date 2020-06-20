@@ -91,7 +91,7 @@ object fmOptions: TfmOptions
     Top = 474
     Width = 333
     TabOrder = 19
-    Text = '/usr/share/sqlnotex-data/sqlNotex.fdb'
+    Text = '/Users/fred/FBData/fbNotex.fdb'
   end
   object bnClose: TButton
     Left = 477
@@ -109,7 +109,7 @@ object fmOptions: TfmOptions
     Top = 528
     Width = 333
     TabOrder = 21
-    Text = '/usr/share/sqlnotex-data/sqlNotex-backup.fdb'
+    Text = '/Users/fred/FBData/fbNotex-backup.fdb'
   end
   object lbBackup: TLabel
     Left = 219
@@ -352,7 +352,7 @@ object fmOptions: TfmOptions
       'ColorS=F0FBFF'
       'ColorT=A4A0A0'
     )
-    left = 344
-    top = 440
+    left = 360
+    top = 408
   end
 end

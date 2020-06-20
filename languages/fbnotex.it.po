@@ -899,7 +899,7 @@ msgid "Select a color"
 msgstr "Selezionare un colore"
 
 #: tfmoptions.edbackup.text
-msgid "/usr/share/sqlnotex-data/sqlNotex-backup.fdb"
+msgid "/Users/fred/FBData/fbNotex-backup.fdb"
 msgstr ""
 
 #: tfmoptions.edfbgbakpath.text
@@ -913,7 +913,7 @@ msgid "/Library/Frameworks/firebird.framework/Versions/A/Resources/lib/libfbclie
 msgstr ""
 
 #: tfmoptions.edpath.text
-msgid "/usr/share/sqlnotex-data/sqlNotex.fdb"
+msgid "/Users/fred/FBData/fbNotex.fdb"
 msgstr ""
 
 #: tfmoptions.edport.text
