@@ -81,7 +81,7 @@ msgid "A free software to manage notes and documents"
 msgstr ""
 
 #: tfmcopyright.lbcopyrightname.caption
-msgid "fbNotex 1.2.2.0"
+msgid "fbNotex 1.2.4.0"
 msgstr ""
 
 #: tfmcopyright.lbcopyrightweb.caption

@@ -590,7 +590,7 @@ var
   iLineSpacing: integer = 1;
   iParagraphSpacing: integer = 1;
   clMarker: TColor = clRed;
-  clHighlight: TColor = clGreen;
+  clHighlight: TColor = clYellow;
   clTaskGreen, clTaskBlue: TColor;
   stFontMono: String = 'Menlo';
 
@@ -761,7 +761,7 @@ begin
       clMarker := StringToColor(MyIni.ReadString('fbnotex',
         'marker', 'clRed'));
       clHighlight := StringToColor(MyIni.ReadString('fbnotex',
-        'highlight', 'clGreen'));
+        'highlight', 'clYellow'));
       iLastNotebook := MyIni.ReadInteger('fbnotex', 'lastnotebook', 0);
       iLastSection := MyIni.ReadInteger('fbnotex', 'lastsection', 0);
       iLastNote := MyIni.ReadInteger('fbnotex', 'lastnote', 0);
@@ -5493,7 +5493,7 @@ begin
         if UTF8Pos(')', stLine, iPosLine) > 0 then
         begin
           rng.location := iPos + iPosLine;
-          rng.length := UTF8Pos(')', stLine, iPosLine) - iPosLine;
+          rng.length := UTF8Pos(')', stLine, iPosLine) - iPosLine - 1;
           TCocoaTextView(NSScrollView(dbText.Handle).documentView).
             setTextColor_range(ColorToNSColor(dbText.Font.Color), rng);
           dict := GetDict(TCocoaTextView(NSScrollView(dbText.Handle).documentView).

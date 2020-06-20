@@ -313,7 +313,7 @@ begin
   end;
   fmMain.sgTitles.Font.Color := clDefault;
   clMarker := clRed;
-  clHighlight := clGreen;
+  clHighlight := clYellow;
   fmMain.FormatMarkers(2);
 end;
 
