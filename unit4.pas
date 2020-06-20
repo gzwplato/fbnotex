@@ -245,6 +245,7 @@ end;
 procedure TfmOptions.edStSizeChange(Sender: TObject);
 begin
   fmMain.dbText.Font.Size := StrToInt(edStSize.Text);
+  fmMain.SetLineParagraph;
   fmMain.FormatMarkers(2);
 end;
 

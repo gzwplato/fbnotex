@@ -593,6 +593,7 @@ var
   clHighlight: TColor = clYellow;
   clTaskGreen, clTaskBlue: TColor;
   stFontMono: String = 'Menlo';
+  iIndent: integer = 50;
 
 resourcestring
 
@@ -980,6 +981,7 @@ begin
     begin
       sgTitles.Font.Size := sgTitles.Font.Size + 1;
     end;
+    SetLineParagraph;
     FormatMarkers(2);
     key := 0;
   end
@@ -994,6 +996,7 @@ begin
     begin
       sgTitles.Font.Size := sgTitles.Font.Size - 1;
     end;
+    SetLineParagraph;
     FormatMarkers(2);
     key := 0;
   end
@@ -5005,16 +5008,18 @@ begin
   par.setParagraphSpacing(iParagraphSpacing);
   par.setLineSpacing(iLineSpacing);
   tabs := NSMutableArray.alloc.init;
+  iIndent := dbText.Font.Size * 3;
   for iTab := 1 to 10 do
   begin
     if iTab = 3 then
     begin
       tab := NSTextTab.alloc.initWithType_location(NSLeftTabStopType,
-        iTab * 50 - GetSpaceWidth);
+        iTab * iIndent - GetSpaceWidth);
     end
     else
     begin
-      tab := NSTextTab.alloc.initWithType_location(NSLeftTabStopType, iTab * 50);
+      tab := NSTextTab.alloc.initWithType_location(NSLeftTabStopType,
+        iTab * iIndent);
     end;
     tabs.addObject(tab);
     tab.release;
@@ -5037,12 +5042,41 @@ var
   num: NSNumber;
   dict: NSDictionary;
 begin
-  if blHideMarCol = True then
+  if dbText.Text = '' then
   begin
     Exit;
   end;
-  if dbText.Text = '' then
+  if blHideMarCol = True then
   begin
+    if iAll = 2 then
+    begin
+      rng.location := 1;
+      rng.length := UTF8Length(dbText.Text) - 1;
+      TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+        setTextColor_range(ColorToNSColor(dbText.Font.Color), rng);
+      dict := GetDict(TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+        textStorage, rng.location);
+      myFont := dict.objectForKey(NSFontAttributeName);
+      fd := FindFont(dbText.Font.Name, 0);
+      myFont := NSFont.fontWithDescriptor_size(fd,
+        TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+        textStorage.font.pointSize);
+      TCocoaTextView(NSScrollView(dbText.Handle).documentView).textStorage.
+        addAttribute_value_range(NSFontAttributeName, myFont, rng);
+      TCocoaTextView(NSScrollView(dbText.Handle).documentView).textStorage.
+        removeAttribute_range(NSUnderlineStyleAttributeName, rng);
+      TCocoaTextView(NSScrollView(dbText.Handle).documentView).textStorage.
+        removeAttribute_range(NSStrikethroughStyleAttributeName, rng);
+      TCocoaTextView(NSScrollView(dbText.Handle).documentView).textStorage.
+        removeAttribute_range(NSBackgroundColorAttributeName, rng);
+      par := GetWritePara(TCocoaTextView(NSScrollView(dbText.Handle).
+        documentView).textStorage, 1);
+      par.setFirstLineHeadIndent(0);
+      par.setHeadIndent(0);
+      TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+        textStorage.addAttribute_value_range(NSParagraphStyleAttributeName,
+        par, rng);
+    end;
     Exit;
   end;
   blCode := False;
@@ -5624,8 +5658,8 @@ begin
       (UTF8Copy(stLine, 2, 3) = '.'#9' ') or
       (UTF8Copy(stLine, 3, 3) = '.'#9' ')) then
     begin
-      par.setFirstLineHeadIndent(100);
-      par.setHeadIndent(150);
+      par.setFirstLineHeadIndent(iIndent * 2);
+      par.setHeadIndent(iIndent * 3);
     end
     else
     if ((UTF8Copy(stLine, 1, 2) = '*'#9) or
@@ -5634,14 +5668,14 @@ begin
       (UTF8Copy(stLine, 2, 2) = '.'#9) or
       (UTF8Copy(stLine, 3, 2) = '.'#9)) then
     begin
-      par.setFirstLineHeadIndent(50);
-      par.setHeadIndent(100);
+      par.setFirstLineHeadIndent(iIndent);
+      par.setHeadIndent(iIndent * 2);
     end
     else
     if UTF8Copy(stLine, 1, 2) = '> ' then
     begin
-      par.setFirstLineHeadIndent(50);
-      par.setHeadIndent(50);
+      par.setFirstLineHeadIndent(iIndent);
+      par.setHeadIndent(iIndent);
     end
     else
     begin
