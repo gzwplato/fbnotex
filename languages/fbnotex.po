@@ -93,6 +93,11 @@ msgctxt "tfmcopyright.lbok.caption"
 msgid "OK"
 msgstr ""
 
+#: tfmhacks.caption
+msgctxt "tfmhacks.caption"
+msgid "fbNotex"
+msgstr ""
+
 #: tfminsertid.bncancel.caption
 msgctxt "tfminsertid.bncancel.caption"
 msgid "Cancel"

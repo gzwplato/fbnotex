@@ -35,6 +35,14 @@ uses
 
 type
 
+  TNSFontParams = record
+    font      : NSFont;
+    fontColor : NSColor;
+    backColor : NSColor;
+    ulnStyle  : NSNumber;
+    strStyle  : NSNumber;
+  end;
+
   { TfmMain }
 
   TfmMain = class(TForm)
@@ -550,10 +558,12 @@ type
     procedure ListAndFormatTitle;
     procedure FormatMarkers(iAll: SmallInt);
     procedure SetLineParagraph;
+    function FindFont(FamilyName: String; iStyle: SmallInt): NSFontDescriptor;
 
   end;
 
 type
+
   TNotePos = record
     IDNote: integer;
     Pos: integer;
@@ -582,6 +592,7 @@ var
   clMarker: TColor = clRed;
   clHighlight: TColor = clGreen;
   clTaskGreen, clTaskBlue: TColor;
+  stFontMono: String = 'Menlo';
 
 resourcestring
 
@@ -673,7 +684,7 @@ resourcestring
 implementation
 
 
-uses Unit2, Unit3, Unit4, Unit5, Unit6, Unit7, Unit8, Unit9, Unit10,
+uses Unit2, Unit3, Unit4, Unit5, Unit6, Unit7, Unit8, Unit9, Unit10, Unit11,
   unitcopyright;
 
 {$R *.lfm}
@@ -891,7 +902,7 @@ begin
   fmOptions.edPath.Text := zcConnection.Database;
   fmOptions.edBackup.Text := stBackupFile;
   TCocoaTextView(NSScrollView(dbText.Handle).documentView).
-    setRichText(False);
+    setRichText(True);
   TCocoaTextView(NSScrollView(dbText.Handle).documentView).
     setContinuousSpellCheckingEnabled(True);
   TCocoaTextView(NSScrollView(dbText.Handle).documentView).
@@ -1869,6 +1880,8 @@ procedure TfmMain.miFileCloseClick(Sender: TObject);
 begin
   SaveAll;
   Disconnect;
+  // Hack to fix a bug that may hide the pictures in the login page
+  fmHacks.ShowModal;
   if edPassword.Visible = True then
   begin
     edPassword.SetFocus;
@@ -3101,12 +3114,13 @@ begin
       setAutomaticQuoteSubstitutionEnabled(True);
     TCocoaTextView(NSScrollView(dbText.Handle).documentView).
       setSmartInsertDeleteEnabled(True);
+    FormatMarkers(2);
   end
   else
   begin
     blHideMarCol := False;
     TCocoaTextView(NSScrollView(dbText.Handle).documentView).
-      setRichText(False);
+      setRichText(True);
     TCocoaTextView(NSScrollView(dbText.Handle).documentView).
       setContinuousSpellCheckingEnabled(True);
     TCocoaTextView(NSScrollView(dbText.Handle).documentView).
@@ -3697,10 +3711,6 @@ begin
   else
   begin
     lbBackup.Visible := False;
-  end;
-  if fmMain.Visible = True then
-  begin
-    fmMain.Refresh;
   end;
 end;
 
@@ -4421,7 +4431,7 @@ begin
         else if ((UTF8Copy(stLine, 1, 3) <> '```') and
           (UTF8Copy(stLine, 1, 3) <> '---')) then
         begin
-          if smOutput < 2 then
+          if ((smOutput < 2) or (blCode = True)) then
           begin
             myText.Add('<p>' + stLine + '</p>');
           end
@@ -5017,11 +5027,15 @@ end;
 
 procedure TfmMain.FormatMarkers(iAll: SmallInt);
 var
-  iPos, iPosLine, iPosCode, i, iTest: integer;
+  iPos, iPosLine, iPosCode, i, iTest, iStart, iEnd: integer;
   blCode, blLineCode: boolean;
   stLine: String;
   rng: NSRange;
   par: NSMutableParagraphStyle;
+  fd: NSFontDescriptor;
+  myFont: NSFont;
+  num: NSNumber;
+  dict: NSDictionary;
 begin
   if blHideMarCol = True then
   begin
@@ -5044,6 +5058,17 @@ begin
         if i <> dbText.CaretPos.Y then
         begin
           iPos := iPos + UTF8Length(dbText.Lines[i]) + UTF8Length(LineEnding);
+          if dbText.Lines[i] = '```' then
+          begin
+            if blCode = False then
+            begin
+              blCode := True;
+            end
+            else
+            begin
+              blCode := False;
+            end;
+          end;
           Continue;
         end;
       end;
@@ -5062,12 +5087,48 @@ begin
     begin
       TCocoaTextView(NSScrollView(dbText.Handle).documentView).
         setTextColor_range(ColorToNSColor(clMarker), rng);
+      dict := GetDict(TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+        textStorage, rng.location);
+      myFont := dict.objectForKey(NSFontAttributeName);
+      fd := FindFont(dbText.Font.Name, 2);
+      myFont := NSFont.fontWithDescriptor_size(fd,
+        TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+        textStorage.font.pointSize);
+    end
+    else
+    if ((blCode = False) or
+      ((blCode = True) and (stLine = '```'))) then
+    begin;
+      TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+        setTextColor_range(ColorToNSColor(dbText.Font.Color), rng);
+      dict := GetDict(TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+        textStorage, rng.location);
+      myFont := dict.objectForKey(NSFontAttributeName);
+      fd := FindFont(dbText.Font.Name, 0);
+      myFont := NSFont.fontWithDescriptor_size(fd,
+        TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+        textStorage.font.pointSize);
     end
     else
     begin
       TCocoaTextView(NSScrollView(dbText.Handle).documentView).
         setTextColor_range(ColorToNSColor(dbText.Font.Color), rng);
+      dict := GetDict(TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+        textStorage, rng.location);
+      myFont := dict.objectForKey(NSFontAttributeName);
+      fd := FindFont(stFontMono, 0);
+      myFont := NSFont.fontWithDescriptor_size(fd,
+        TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+        textStorage.font.pointSize);
     end;
+    TCocoaTextView(NSScrollView(dbText.Handle).documentView).textStorage.
+      addAttribute_value_range(NSFontAttributeName, myFont, rng);
+    TCocoaTextView(NSScrollView(dbText.Handle).documentView).textStorage.
+      removeAttribute_range(NSUnderlineStyleAttributeName, rng);
+    TCocoaTextView(NSScrollView(dbText.Handle).documentView).textStorage.
+      removeAttribute_range(NSStrikethroughStyleAttributeName, rng);
+    TCocoaTextView(NSScrollView(dbText.Handle).documentView).textStorage.
+      removeAttribute_range(NSBackgroundColorAttributeName, rng);
     iPosLine := 1;
     while UTF8Pos('::', stLine, iPosLine) > 0 do
     begin
@@ -5084,8 +5145,9 @@ begin
           setTextColor_range(ColorToNSColor(clMarker), rng);
         rng.location := iPos + iPosLine + 1;
         rng.length := UTF8Pos('::', stLine, iPosLine + 2) - iPosLIne - 2;
-        TCocoaTextView(NSScrollView(dbText.Handle).documentView).
-          setTextColor_range(ColorToNSColor(clHighlight), rng);
+        TCocoaTextView(NSScrollView(dbText.Handle).documentView).textStorage.
+          addAttribute_value_range(NSBackgroundColorAttributeName,
+          ColorToNSColor(clHighlight), rng);
         iPosLine := UTF8Pos('::', stLine, iPosLine + 2) + 2;
         rng.location := iPos + iPosLine - 3;
         rng.length := 1;
@@ -5113,6 +5175,50 @@ begin
         rng.length := 1;
         TCocoaTextView(NSScrollView(dbText.Handle).documentView).
           setTextColor_range(ColorToNSColor(clMarker), rng);
+        if UTF8Pos('*', stLine, iPosLine + 1) > 0 then
+        begin
+          if UTF8Copy(stLine, UTF8Pos('*', stLine,
+            iPosLine + 1) - 1, 1) <> ' ' then
+          begin
+            iStart := iPosLine + 1;
+            while ((UTF8Copy(stLine, iStart, 1) = '/') or
+              (UTF8Copy(stLine, iStart, 1) = '_') or
+              (UTF8Copy(stLine, iStart, 1) = '~')) do
+            begin
+              Inc(iStart);
+            end;
+            iEnd := UTF8Pos('*', stLine, iPosLine + 1) - 1;
+            iPosLine := iEnd + 1;
+            rng.location := iPos + iEnd;
+            rng.length := 1;
+            TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+              setTextColor_range(ColorToNSColor(clMarker), rng);
+            while ((UTF8Copy(stLine, iEnd, 1) = '/') or
+              (UTF8Copy(stLine, iEnd, 1) = '_') or
+              (UTF8Copy(stLine, iEnd, 1) = '~')) do
+            begin
+              Dec(iEnd);
+            end;
+            rng.location := iPos + iStart - 1;
+            rng.length := iEnd - iStart + 1;
+            dict := GetDict(TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+              textStorage, rng.location);
+            myFont := dict.objectForKey(NSFontAttributeName);
+            if myFont.fontDescriptor.symbolicTraits and NSFontItalicTrait > 0 then
+            begin
+              fd := FindFont(dbText.Font.Name, 3);
+            end
+            else
+            begin
+              fd := FindFont(dbText.Font.Name, 2);
+            end;
+            myFont := NSFont.fontWithDescriptor_size(fd,
+              TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+              textStorage.font.pointSize);
+            TCocoaTextView(NSScrollView(dbText.Handle).documentView).textStorage.
+              addAttribute_value_range(NSFontAttributeName, myFont, rng);
+          end
+        end;
       end;
       Inc(iPosLine);
     end;
@@ -5128,6 +5234,50 @@ begin
         rng.length := 1;
         TCocoaTextView(NSScrollView(dbText.Handle).documentView).
           setTextColor_range(ColorToNSColor(clMarker), rng);
+        if UTF8Pos('/', stLine, iPosLine + 1) > 0 then
+        begin
+          if UTF8Copy(stLine, UTF8Pos('/', stLine,
+            iPosLine + 1) - 1, 1) <> ' ' then
+          begin
+            iStart := iPosLine + 1;
+            while ((UTF8Copy(stLine, iStart, 1) = '*') or
+              (UTF8Copy(stLine, iStart, 1) = '_') or
+              (UTF8Copy(stLine, iStart, 1) = '~')) do
+            begin
+              Inc(iStart);
+            end;
+            iEnd := UTF8Pos('/', stLine, iPosLine + 1) - 1;
+            iPosLine := iEnd + 1;
+            rng.location := iPos + iEnd;
+            rng.length := 1;
+            TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+              setTextColor_range(ColorToNSColor(clMarker), rng);
+            while ((UTF8Copy(stLine, iEnd, 1) = '*') or
+              (UTF8Copy(stLine, iEnd, 1) = '_') or
+              (UTF8Copy(stLine, iEnd, 1) = '~')) do
+            begin
+              Dec(iEnd);
+            end;
+            rng.location := iPos + iStart - 1;
+            rng.length := iEnd - iStart + 1;
+            dict := GetDict(TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+              textStorage, rng.location);
+            myFont := dict.objectForKey(NSFontAttributeName);
+            if myFont.fontDescriptor.symbolicTraits and NSFontBoldTrait > 0 then
+            begin
+              fd := FindFont(dbText.Font.Name, 3);
+            end
+            else
+            begin
+              fd := FindFont(dbText.Font.Name, 1);
+            end;
+            myFont := NSFont.fontWithDescriptor_size(fd,
+              TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+              textStorage.font.pointSize);
+            TCocoaTextView(NSScrollView(dbText.Handle).documentView).textStorage.
+              addAttribute_value_range(NSFontAttributeName, myFont, rng);
+          end
+        end;
       end;
       Inc(iPosLine);
     end;
@@ -5143,6 +5293,37 @@ begin
         rng.length := 1;
         TCocoaTextView(NSScrollView(dbText.Handle).documentView).
           setTextColor_range(ColorToNSColor(clMarker), rng);
+        if UTF8Pos('_', stLine, iPosLine + 1) > 0 then
+        begin
+          if UTF8Copy(stLine, UTF8Pos('_', stLine,
+            iPosLine + 1) - 1, 1) <> ' ' then
+          begin
+            iStart := iPosLine + 1;
+            while ((UTF8Copy(stLine, iStart, 1) = '*') or
+              (UTF8Copy(stLine, iStart, 1) = '/') or
+              (UTF8Copy(stLine, iStart, 1) = '~')) do
+            begin
+              Inc(iStart);
+            end;
+            iEnd := UTF8Pos('_', stLine, iPosLine + 1) - 1;
+            iPosLine := iEnd + 1;
+            rng.location := iPos + iEnd;
+            rng.length := 1;
+            TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+              setTextColor_range(ColorToNSColor(clMarker), rng);
+            while ((UTF8Copy(stLine, iEnd, 1) = '*') or
+              (UTF8Copy(stLine, iEnd, 1) = '/') or
+              (UTF8Copy(stLine, iEnd, 1) = '~')) do
+            begin
+              Dec(iEnd);
+            end;
+            rng.location := iPos + iStart - 1;
+            rng.length := iEnd - iStart + 1;
+            num := NSNumber.numberWithInt(NSUnderlineStyleSingle);
+            TCocoaTextView(NSScrollView(dbText.Handle).documentView).textStorage.
+                addAttribute_value_range(NSUnderlineStyleAttributeName, num, rng);
+          end
+        end;
       end;
       Inc(iPosLine);
     end;
@@ -5158,6 +5339,37 @@ begin
         rng.length := 1;
         TCocoaTextView(NSScrollView(dbText.Handle).documentView).
           setTextColor_range(ColorToNSColor(clMarker), rng);
+        if UTF8Pos('~', stLine, iPosLine + 1) > 0 then
+        begin
+          if UTF8Copy(stLine, UTF8Pos('~', stLine,
+            iPosLine + 1) - 1, 1) <> ' ' then
+          begin
+            iStart := iPosLine + 1;
+            while ((UTF8Copy(stLine, iStart, 1) = '*') or
+              (UTF8Copy(stLine, iStart, 1) = '/') or
+              (UTF8Copy(stLine, iStart, 1) = '_')) do
+            begin
+              Inc(iStart);
+            end;
+            iEnd := UTF8Pos('~', stLine, iPosLine + 1) - 1;
+            iPosLine := iEnd + 1;
+            rng.location := iPos + iEnd;
+            rng.length := 1;
+            TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+              setTextColor_range(ColorToNSColor(clMarker), rng);
+            while ((UTF8Copy(stLine, iEnd, 1) = '*') or
+              (UTF8Copy(stLine, iEnd, 1) = '/') or
+              (UTF8Copy(stLine, iEnd, 1) = '_')) do
+            begin
+              Dec(iEnd);
+            end;
+            rng.location := iPos + iStart - 1;
+            rng.length := iEnd - iStart + 1;
+            num := NSNumber.numberWithInt(NSUnderlineStyleSingle);
+            TCocoaTextView(NSScrollView(dbText.Handle).documentView).textStorage.
+                addAttribute_value_range(NSStrikethroughStyleAttributeName, num, rng);
+          end
+        end;
       end;
       Inc(iPosLine);
     end;
@@ -5219,6 +5431,16 @@ begin
           rng.length := iPosLine - iPosCode - 1;
           TCocoaTextView(NSScrollView(dbText.Handle).documentView).
             setTextColor_range(ColorToNSColor(dbText.Font.Color), rng);
+          fd := FindFont(stFontMono, 0);
+          myFont := NSFont.fontWithDescriptor_size(fd,
+            TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+            textStorage.font.pointSize);
+          TCocoaTextView(NSScrollView(dbText.Handle).documentView).textStorage.
+            addAttribute_value_range(NSFontAttributeName, myFont, rng);
+          TCocoaTextView(NSScrollView(dbText.Handle).documentView).textStorage.
+            removeAttribute_range(NSUnderlineStyleAttributeName, rng);
+          TCocoaTextView(NSScrollView(dbText.Handle).documentView).textStorage.
+            removeAttribute_range(NSStrikethroughStyleAttributeName, rng);
           blLineCode := False;
         end;
         Inc(iPosLine);
@@ -5274,6 +5496,20 @@ begin
           rng.length := UTF8Pos(')', stLine, iPosLine) - iPosLine;
           TCocoaTextView(NSScrollView(dbText.Handle).documentView).
             setTextColor_range(ColorToNSColor(dbText.Font.Color), rng);
+          dict := GetDict(TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+            textStorage, rng.location);
+          myFont := dict.objectForKey(NSFontAttributeName);
+          fd := FindFont(dbText.Font.Name, 0);
+          myFont := NSFont.fontWithDescriptor_size(fd,
+            TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+            textStorage.font.pointSize);
+          TCocoaTextView(NSScrollView(dbText.Handle).documentView).textStorage.
+            addAttribute_value_range(NSFontAttributeName, myFont, rng);
+          TCocoaTextView(NSScrollView(dbText.Handle).documentView).textStorage.
+            removeAttribute_range(NSStrikethroughStyleAttributeName, rng);
+          num := NSNumber.numberWithInt(NSUnderlineStyleSingle);
+          TCocoaTextView(NSScrollView(dbText.Handle).documentView).textStorage.
+            addAttribute_value_range(NSUnderlineStyleAttributeName, num, rng);
           rng.location := iPos + UTF8Pos(')', stLine, iPosLine) - 1;
           rng.length := 1;
           TCocoaTextView(NSScrollView(dbText.Handle).documentView).
@@ -5402,6 +5638,12 @@ begin
       par.setHeadIndent(100);
     end
     else
+    if UTF8Copy(stLine, 1, 2) = '> ' then
+    begin
+      par.setFirstLineHeadIndent(50);
+      par.setHeadIndent(50);
+    end
+    else
     begin
       par.setFirstLineHeadIndent(0);
       par.setHeadIndent(0);
@@ -5412,6 +5654,10 @@ begin
       textStorage.addAttribute_value_range(NSParagraphStyleAttributeName,
       par, rng);
     iPos := iPos + UTF8Length(dbText.Lines[i]) + UTF8Length(LineEnding);
+    if iAll = 1 then
+    begin
+      Exit;
+    end;
   end;
 end;
 
@@ -5949,6 +6195,40 @@ begin
     textOffset := txt.string_.length - 1;
   end;
   Result := txt.attributesAtIndex_effectiveRange(textOffset, nil);
+end;
+
+function TfmMain.FindFont(FamilyName: String; iStyle: SmallInt): NSFontDescriptor;
+var
+  fd: NSFontDescriptor;
+  fdd: NSFontDescriptor;
+  trt: NSFontSymbolicTraits;
+  ns: NSString;
+begin
+  trt := 0;
+  ns := NSStringUtf8(FamilyName);
+  if iStyle = 1 then
+  begin
+    trt := trt or NSFontItalicTrait
+  end
+  else
+  if iStyle = 2 then
+  begin
+    trt := trt or NSFontBoldTrait
+  end
+  else
+  if iStyle = 3 then
+  begin
+    trt := trt or NSFontBoldTrait or NSFontItalicTrait;
+  end;
+  fd := NSFontDescriptor(NSFontDescriptor.alloc).initWithFontAttributes(nil);
+  try
+    fd := fd.fontDescriptorWithFamily(ns);
+    fd := fd.fontDescriptorWithSymbolicTraits(trt);
+    fdd := fd.matchingFontDescriptorWithMandatoryKeys(nil);
+    Result := fdd;
+  finally
+    ns.release;
+  end;
 end;
 
 end.

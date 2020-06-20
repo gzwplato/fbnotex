@@ -28,7 +28,7 @@ uses
   Forms, zcomponent, Unit1, Unit2, Unit3, unitcopyright, Unit4,
   Unit6, Unit7, Unit8, Unit9, Unit5, Unit10,
   {$IFDEF Darwin}
-    clocale, iosxlocale;
+    clocale, iosxlocale, Unit11;
   {$ENDIF}
 
 {$R *.res}
@@ -48,6 +48,7 @@ begin
   Application.CreateForm(TfmSearch, fmSearch);
   Application.CreateForm(TfmBookmarks, fmBookmarks);
   Application.CreateForm(TfmPassword, fmPassword);
+  Application.CreateForm(TfmHacks, fmHacks);
   Application.Run;
 end.
 

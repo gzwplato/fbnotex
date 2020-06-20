@@ -1,0 +1,13 @@
+object fmHacks: TfmHacks
+  Left = 885
+  Height = 174
+  Top = 442
+  Width = 276
+  AlphaBlend = True
+  AlphaBlendValue = 0
+  Caption = 'fbNotex'
+  OnShow = FormShow
+  Position = poScreenCenter
+  ShowInTaskBar = stNever
+  LCLVersion = '2.0.8.0'
+end

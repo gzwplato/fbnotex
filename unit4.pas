@@ -22,12 +22,13 @@
 unit Unit4;
 
 {$mode objfpc}{$H+}
+{$modeswitch objectivec1}
 
 interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, StdCtrls, ComCtrls,
-  ExtCtrls, LazUTF8, CocoaThemes;
+  ExtCtrls, LazUTF8, CocoaThemes, CocoaAll, CocoaUtils;
 
 type
 
@@ -104,11 +105,50 @@ Uses Unit1;
 
 {$R *.lfm}
 
+
 { TfmOptions }
 
 procedure TfmOptions.FormCreate(Sender: TObject);
+  var fm: NSFontManager;
+    FontFamilies, FontMembers: NSArray;
+    i, n: integer;
+    flItalics, flBold: boolean;
 begin
-  cbStFonts.Items := Screen.Fonts;
+  fm := NSFontManager.sharedFontManager;
+  FontFamilies := fm.availableFontFamilies;
+  for i := 0 to FontFamilies.Count - 1 do
+  begin
+    flBold := False;
+    flItalics := False;
+    FontMembers := fm.availableMembersOfFontFamily(FontFamilies.objectAtIndex(i).
+      description);
+    for n := 0 to FontMembers.Count - 1 do
+    begin
+      if fm.fontNamed_hasTraits(FontMembers.objectAtIndex(n).
+        objectAtIndex(0).description, NSFontBoldTrait) = True then
+      begin
+        flBold := True;
+      end;
+      if fm.fontNamed_hasTraits(FontMembers.objectAtIndex(n).
+        objectAtIndex(0).description, NSFontItalicTrait) = True then
+      begin
+        if flBold = True then
+        begin
+          flItalics := True;
+        end;
+      end;
+    end;
+    if ((flBold = True) and (flItalics = True)) then
+    begin
+      cbStFonts.Items.Add(NSStringToString(FontFamilies.objectAtIndex(i).
+        description));
+    end;
+  end;
+  // Does not work
+  if cbStFonts.Items.IndexOf('Avenir Next Condensed') > -1 then
+  begin
+    cbStFonts.Items.Delete(cbStFonts.Items.IndexOf('Avenir Next Condensed'));
+  end;
   cbStFonts.ItemIndex := 0;
 end;
 

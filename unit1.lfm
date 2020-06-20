@@ -1,7 +1,7 @@
 object fmMain: TfmMain
-  Left = 485
+  Left = 400
   Height = 754
-  Top = 165
+  Top = 145
   Width = 1405
   ActiveControl = edPassword
   AllowDropFiles = True
