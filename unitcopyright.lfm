@@ -903,7 +903,7 @@ object fmCopyright: TfmCopyright
     Height = 43
     Top = 13
     Width = 225
-    Caption = 'fbNotex 1.2.5'
+    Caption = 'fbNotex 1.2.6'
     Font.Color = 7786358
     Font.Height = -36
     Font.Style = [fsBold]

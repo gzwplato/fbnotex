@@ -81,7 +81,7 @@ msgid "A free software to manage notes and documents"
 msgstr ""
 
 #: tfmcopyright.lbcopyrightname.caption
-msgid "fbNotex 1.2.5"
+msgid "fbNotex 1.2.6"
 msgstr ""
 
 #: tfmcopyright.lbcopyrightweb.caption
@@ -863,18 +863,23 @@ msgctxt "tfmoptions.bnstfontcolordef.caption"
 msgid "Default colors"
 msgstr ""
 
-#: tfmoptions.bnstfontcolordef1.caption
-msgid "Highlight color"
-msgstr ""
-
 #: tfmoptions.bnstfontcolormod.caption
 msgctxt "tfmoptions.bnstfontcolormod.caption"
 msgid "Font color"
 msgstr ""
 
-#: tfmoptions.bnstmarkcolormod.caption
-msgctxt "tfmoptions.bnstmarkcolormod.caption"
-msgid "Headings and markers color"
+#: tfmoptions.bnstfonthighcolormod.caption
+msgctxt "tfmoptions.bnstfonthighcolormod.caption"
+msgid "Highlight color"
+msgstr ""
+
+#: tfmoptions.bnstfontmarkmod.caption
+msgctxt "tfmoptions.bnstfontmarkmod.caption"
+msgid "Markers color"
+msgstr ""
+
+#: tfmoptions.bnstfonttitlecolormod.caption
+msgid "Titles, lists and links color"
 msgstr ""
 
 #: tfmoptions.caption

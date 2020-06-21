@@ -37,9 +37,10 @@ type
   TfmOptions = class(TForm)
     bnClose: TButton;
     bnStFontColorDef: TButton;
-    bnStFontColorDef1: TButton;
+    bnStFontHighColorMod: TButton;
     bnStFontColorMod: TButton;
-    bnStMarkColorMod: TButton;
+    bnStFontMarkMod: TButton;
+    bnStFontTitleColorMod: TButton;
     edStMaxLess: TButton;
     edStSizePlus: TButton;
     edStSizeLess: TButton;
@@ -72,10 +73,11 @@ type
     tbLineSpacing: TTrackBar;
     tbParaSpacing: TTrackBar;
     procedure bnCloseClick(Sender: TObject);
-    procedure bnStFontColorDef1Click(Sender: TObject);
+    procedure bnStFontHighColorModClick(Sender: TObject);
     procedure bnStFontColorDefClick(Sender: TObject);
     procedure bnStFontColorModClick(Sender: TObject);
-    procedure bnStMarkColorModClick(Sender: TObject);
+    procedure bnStFontMarkModClick(Sender: TObject);
+    procedure bnStFontTitleColorModClick(Sender: TObject);
     procedure cbStFontsChange(Sender: TObject);
     procedure edStMaxLessClick(Sender: TObject);
     procedure edStMaxPlusClick(Sender: TObject);
@@ -313,8 +315,9 @@ begin
     fmMain.dbText.Font.Color := clDefault;
   end;
   fmMain.sgTitles.Font.Color := clDefault;
-  clMarker := clRed;
+  clTitle := clRed;
   clHighlight := clYellow;
+  clMark := clGray;
   fmMain.FormatMarkers(2);
 end;
 
@@ -329,17 +332,27 @@ begin
   end;
 end;
 
-procedure TfmOptions.bnStMarkColorModClick(Sender: TObject);
+procedure TfmOptions.bnStFontMarkModClick(Sender: TObject);
 begin
-  cdColorDialog.Color := clMarker;
+  cdColorDialog.Color := clMark;
   if cdColorDialog.Execute then
   begin
-    clMarker := cdColorDialog.Color;
+    clMark := cdColorDialog.Color;
     fmMain.FormatMarkers(2);
   end;
 end;
 
-procedure TfmOptions.bnStFontColorDef1Click(Sender: TObject);
+procedure TfmOptions.bnStFontTitleColorModClick(Sender: TObject);
+begin
+  cdColorDialog.Color := clTitle;
+  if cdColorDialog.Execute then
+  begin
+    clTitle := cdColorDialog.Color;
+    fmMain.FormatMarkers(2);
+  end;
+end;
+
+procedure TfmOptions.bnStFontHighColorModClick(Sender: TObject);
 begin
   cdColorDialog.Color := clHighlight;
   if cdColorDialog.Execute then

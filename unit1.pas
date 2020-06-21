@@ -589,8 +589,9 @@ var
   iSimpleTextFrom: integer = 100000;
   iLineSpacing: integer = 1;
   iParagraphSpacing: integer = 1;
-  clMarker: TColor = clRed;
+  clMark: TColor = clGray;
   clHighlight: TColor = clYellow;
+  clTitle: TColor = clRed;
   clTaskGreen, clTaskBlue: TColor;
   stFontMono: String = 'Menlo';
   iIndent: integer = 50;
@@ -759,8 +760,10 @@ begin
       end;
       sgTitles.Font.Name := dbText.Font.Name;
       sgTitles.Font.Color := dbText.Font.Color;
-      clMarker := StringToColor(MyIni.ReadString('fbnotex',
-        'marker', 'clRed'));
+      clMark := StringToColor(MyIni.ReadString('fbnotex',
+        'marker', 'clGray'));
+      clTitle := StringToColor(MyIni.ReadString('fbnotex',
+        'title', 'clRed'));
       clHighlight := StringToColor(MyIni.ReadString('fbnotex',
         'highlight', 'clYellow'));
       iLastNotebook := MyIni.ReadInteger('fbnotex', 'lastnotebook', 0);
@@ -863,7 +866,8 @@ begin
     MyIni.WriteInteger('fbnotex', 'linespacing', iLineSpacing);
     MyIni.WriteInteger('fbnotex', 'paragraphspacing', iParagraphSpacing);
     MyIni.WriteString('fbnotex', 'fontcolor', ColorToString(dbText.Font.Color));
-    MyIni.WriteString('fbnotex', 'marker', ColorToString(clMarker));
+    MyIni.WriteString('fbnotex', 'title', ColorToString(clTitle));
+    MyIni.WriteString('fbnotex', 'marker', ColorToString(clMark));
     MyIni.WriteString('fbnotex', 'highlight', ColorToString(clHighlight));
     MyIni.WriteInteger('fbnotex', 'simpletxtfrom', iSimpleTextFrom);
     if miToolsHideMarCol.Checked = True then
@@ -3109,14 +3113,6 @@ begin
     sgTitles.RowCount := 0;
     TCocoaTextView(NSScrollView(dbText.Handle).documentView).
       setRichText(False);
-    TCocoaTextView(NSScrollView(dbText.Handle).documentView).
-      setTextColor(ColorToNSColor(dbText.Font.Color));
-    TCocoaTextView(NSScrollView(dbText.Handle).documentView).
-      setContinuousSpellCheckingEnabled(True);
-    TCocoaTextView(NSScrollView(dbText.Handle).documentView).
-      setAutomaticQuoteSubstitutionEnabled(True);
-    TCocoaTextView(NSScrollView(dbText.Handle).documentView).
-      setSmartInsertDeleteEnabled(True);
     FormatMarkers(2);
   end
   else
@@ -3124,12 +3120,6 @@ begin
     blHideMarCol := False;
     TCocoaTextView(NSScrollView(dbText.Handle).documentView).
       setRichText(True);
-    TCocoaTextView(NSScrollView(dbText.Handle).documentView).
-      setContinuousSpellCheckingEnabled(True);
-    TCocoaTextView(NSScrollView(dbText.Handle).documentView).
-      setAutomaticQuoteSubstitutionEnabled(True);
-    TCocoaTextView(NSScrollView(dbText.Handle).documentView).
-      setSmartInsertDeleteEnabled(True);
     ListAndFormatTitle;
     FormatMarkers(2);
   end;
@@ -5035,7 +5025,7 @@ var
   iPos, iPosLine, iPosCode, i, iTest, iStart, iEnd: integer;
   blCode, blLineCode: boolean;
   stLine: String;
-  rng: NSRange;
+  rng, rngtit: NSRange;
   par: NSMutableParagraphStyle;
   fd: NSFontDescriptor;
   myFont: NSFont;
@@ -5050,8 +5040,8 @@ begin
   begin
     if iAll = 2 then
     begin
-      rng.location := 1;
-      rng.length := UTF8Length(dbText.Text) - 1;
+      rng.location := 0;
+      rng.length := UTF8Length(dbText.Text);
       TCocoaTextView(NSScrollView(dbText.Handle).documentView).
         setTextColor_range(ColorToNSColor(dbText.Font.Color), rng);
       dict := GetDict(TCocoaTextView(NSScrollView(dbText.Handle).documentView).
@@ -5119,8 +5109,12 @@ begin
     end;
     if IsHeader(stLine) = True then
     begin
+      rngtit.location := rng.location;
+      rngtit.length := UTF8Pos(' ', stLine) - 1;
       TCocoaTextView(NSScrollView(dbText.Handle).documentView).
-        setTextColor_range(ColorToNSColor(clMarker), rng);
+        setTextColor_range(ColorToNSColor(clTitle), rng);
+      TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+        setTextColor_range(ColorToNSColor(clMark), rngtit);
       dict := GetDict(TCocoaTextView(NSScrollView(dbText.Handle).documentView).
         textStorage, rng.location);
       myFont := dict.objectForKey(NSFontAttributeName);
@@ -5172,11 +5166,11 @@ begin
         rng.location := iPos + iPosLine - 1;
         rng.length := 1;
         TCocoaTextView(NSScrollView(dbText.Handle).documentView).
-          setTextColor_range(ColorToNSColor(clMarker), rng);
+          setTextColor_range(ColorToNSColor(clMark), rng);
         rng.location := iPos + iPosLine;
         rng.length := 1;
         TCocoaTextView(NSScrollView(dbText.Handle).documentView).
-          setTextColor_range(ColorToNSColor(clMarker), rng);
+          setTextColor_range(ColorToNSColor(clMark), rng);
         rng.location := iPos + iPosLine + 1;
         rng.length := UTF8Pos('::', stLine, iPosLine + 2) - iPosLIne - 2;
         TCocoaTextView(NSScrollView(dbText.Handle).documentView).textStorage.
@@ -5186,11 +5180,11 @@ begin
         rng.location := iPos + iPosLine - 3;
         rng.length := 1;
         TCocoaTextView(NSScrollView(dbText.Handle).documentView).
-          setTextColor_range(ColorToNSColor(clMarker), rng);
+          setTextColor_range(ColorToNSColor(clMark), rng);
         rng.location := iPos + iPosLine - 2;
         rng.length := 1;
         TCocoaTextView(NSScrollView(dbText.Handle).documentView).
-          setTextColor_range(ColorToNSColor(clMarker), rng);
+          setTextColor_range(ColorToNSColor(clMark), rng);
       end
       else
       begin
@@ -5198,6 +5192,14 @@ begin
       end;
     end;
     iPosLine := 1;
+    if UTF8Copy(stLine, 1, 2) ='*'#9 then
+    begin
+      rng.location := iPos + iPosLine - 1;
+      rng.length := 1;
+      TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+        setTextColor_range(ColorToNSColor(clTitle), rng);
+    end;
+    iPosLine := 2;
     while UTF8Pos('*', stLine, iPosLine) > 0 do
     begin
       iPosLine := UTF8Pos('*', stLine, iPosLine);
@@ -5208,7 +5210,7 @@ begin
         rng.location := iPos + iPosLine - 1;
         rng.length := 1;
         TCocoaTextView(NSScrollView(dbText.Handle).documentView).
-          setTextColor_range(ColorToNSColor(clMarker), rng);
+          setTextColor_range(ColorToNSColor(clMark), rng);
         if UTF8Pos('*', stLine, iPosLine + 1) > 0 then
         begin
           if UTF8Copy(stLine, UTF8Pos('*', stLine,
@@ -5226,7 +5228,7 @@ begin
             rng.location := iPos + iEnd;
             rng.length := 1;
             TCocoaTextView(NSScrollView(dbText.Handle).documentView).
-              setTextColor_range(ColorToNSColor(clMarker), rng);
+              setTextColor_range(ColorToNSColor(clMark), rng);
             while ((UTF8Copy(stLine, iEnd, 1) = '/') or
               (UTF8Copy(stLine, iEnd, 1) = '_') or
               (UTF8Copy(stLine, iEnd, 1) = '~')) do
@@ -5267,7 +5269,7 @@ begin
         rng.location := iPos + iPosLine - 1;
         rng.length := 1;
         TCocoaTextView(NSScrollView(dbText.Handle).documentView).
-          setTextColor_range(ColorToNSColor(clMarker), rng);
+          setTextColor_range(ColorToNSColor(clMark), rng);
         if UTF8Pos('/', stLine, iPosLine + 1) > 0 then
         begin
           if UTF8Copy(stLine, UTF8Pos('/', stLine,
@@ -5285,7 +5287,7 @@ begin
             rng.location := iPos + iEnd;
             rng.length := 1;
             TCocoaTextView(NSScrollView(dbText.Handle).documentView).
-              setTextColor_range(ColorToNSColor(clMarker), rng);
+              setTextColor_range(ColorToNSColor(clMark), rng);
             while ((UTF8Copy(stLine, iEnd, 1) = '*') or
               (UTF8Copy(stLine, iEnd, 1) = '_') or
               (UTF8Copy(stLine, iEnd, 1) = '~')) do
@@ -5326,7 +5328,7 @@ begin
         rng.location := iPos + iPosLine - 1;
         rng.length := 1;
         TCocoaTextView(NSScrollView(dbText.Handle).documentView).
-          setTextColor_range(ColorToNSColor(clMarker), rng);
+          setTextColor_range(ColorToNSColor(clMark), rng);
         if UTF8Pos('_', stLine, iPosLine + 1) > 0 then
         begin
           if UTF8Copy(stLine, UTF8Pos('_', stLine,
@@ -5344,7 +5346,7 @@ begin
             rng.location := iPos + iEnd;
             rng.length := 1;
             TCocoaTextView(NSScrollView(dbText.Handle).documentView).
-              setTextColor_range(ColorToNSColor(clMarker), rng);
+              setTextColor_range(ColorToNSColor(clMark), rng);
             while ((UTF8Copy(stLine, iEnd, 1) = '*') or
               (UTF8Copy(stLine, iEnd, 1) = '/') or
               (UTF8Copy(stLine, iEnd, 1) = '~')) do
@@ -5372,7 +5374,7 @@ begin
         rng.location := iPos + iPosLine - 1;
         rng.length := 1;
         TCocoaTextView(NSScrollView(dbText.Handle).documentView).
-          setTextColor_range(ColorToNSColor(clMarker), rng);
+          setTextColor_range(ColorToNSColor(clMark), rng);
         if UTF8Pos('~', stLine, iPosLine + 1) > 0 then
         begin
           if UTF8Copy(stLine, UTF8Pos('~', stLine,
@@ -5390,7 +5392,7 @@ begin
             rng.location := iPos + iEnd;
             rng.length := 1;
             TCocoaTextView(NSScrollView(dbText.Handle).documentView).
-              setTextColor_range(ColorToNSColor(clMarker), rng);
+              setTextColor_range(ColorToNSColor(clMark), rng);
             while ((UTF8Copy(stLine, iEnd, 1) = '*') or
               (UTF8Copy(stLine, iEnd, 1) = '/') or
               (UTF8Copy(stLine, iEnd, 1) = '_')) do
@@ -5416,7 +5418,7 @@ begin
         rng.location := iPos + iPosLine - 1;
         rng.length := 1;
         TCocoaTextView(NSScrollView(dbText.Handle).documentView).
-          setTextColor_range(ColorToNSColor(clMarker), rng);
+          setTextColor_range(ColorToNSColor(clMark), rng);
       end;
       Inc(iPosLine);
     end;
@@ -5426,15 +5428,15 @@ begin
       rng.location := iPos + iPosLine - 1;
       rng.length := 1;
       TCocoaTextView(NSScrollView(dbText.Handle).documentView).
-        setTextColor_range(ColorToNSColor(clMarker), rng);
+        setTextColor_range(ColorToNSColor(clMark), rng);
       rng.location := iPos + iPosLine;
       rng.length := 1;
       TCocoaTextView(NSScrollView(dbText.Handle).documentView).
-        setTextColor_range(ColorToNSColor(clMarker), rng);
+        setTextColor_range(ColorToNSColor(clMark), rng);
       rng.location := iPos + iPosLine + 1;
       rng.length := 1;
       TCocoaTextView(NSScrollView(dbText.Handle).documentView).
-        setTextColor_range(ColorToNSColor(clMarker), rng);
+        setTextColor_range(ColorToNSColor(clMark), rng);
       if blCode = True then
       begin
         blCode := False;
@@ -5453,7 +5455,7 @@ begin
         rng.location := iPos + iPosLine - 1;
         rng.length := 1;
         TCocoaTextView(NSScrollView(dbText.Handle).documentView).
-          setTextColor_range(ColorToNSColor(clMarker), rng);
+          setTextColor_range(ColorToNSColor(clMark), rng);
         if blLineCode = False then
         begin
           iPosCode := iPosLine;
@@ -5489,7 +5491,7 @@ begin
         rng.location := iPos + iPosLine - 1;
         rng.length := 1;
         TCocoaTextView(NSScrollView(dbText.Handle).documentView).
-          setTextColor_range(ColorToNSColor(clMarker), rng);
+          setTextColor_range(ColorToNSColor(clMark), rng);
       end;
       Inc(iPosLine);
     end;
@@ -5503,13 +5505,17 @@ begin
         rng.location := iPos + iPosLine - 1;
         rng.length := 1;
         TCocoaTextView(NSScrollView(dbText.Handle).documentView).
-          setTextColor_range(ColorToNSColor(clMarker), rng);
+          setTextColor_range(ColorToNSColor(clMark), rng);
         if UTF8Pos(']', stLine, iPosLine) > 0 then
         begin
+          rng.location := iPos + iPosLine;
+          rng.length := UTF8Pos(']', stLine, iPosLine) - iPosLine;
+          TCocoaTextView(NSScrollView(dbText.Handle).documentView).
+            setTextColor_range(ColorToNSColor(clTitle), rng);
           rng.location := iPos + UTF8Pos(']', stLine, iPosLine) - 1;
           rng.length := 1;
           TCocoaTextView(NSScrollView(dbText.Handle).documentView).
-            setTextColor_range(ColorToNSColor(clMarker), rng);
+            setTextColor_range(ColorToNSColor(clMark), rng);
         end;
       end;
       Inc(iPosLine);
@@ -5523,7 +5529,7 @@ begin
         rng.location := iPos + iPosLine - 1;
         rng.length := 1;
         TCocoaTextView(NSScrollView(dbText.Handle).documentView).
-          setTextColor_range(ColorToNSColor(clMarker), rng);
+          setTextColor_range(ColorToNSColor(clMark), rng);
         if UTF8Pos(')', stLine, iPosLine) > 0 then
         begin
           rng.location := iPos + iPosLine;
@@ -5547,7 +5553,7 @@ begin
           rng.location := iPos + UTF8Pos(')', stLine, iPosLine) - 1;
           rng.length := 1;
           TCocoaTextView(NSScrollView(dbText.Handle).documentView).
-            setTextColor_range(ColorToNSColor(clMarker), rng);
+            setTextColor_range(ColorToNSColor(clMark), rng);
         end;
       end;
       Inc(iPosLine);
@@ -5561,7 +5567,7 @@ begin
         rng.location := iPos + iPosLine - 1;
         rng.length := 1;
         TCocoaTextView(NSScrollView(dbText.Handle).documentView).
-          setTextColor_range(ColorToNSColor(clMarker), rng);
+          setTextColor_range(ColorToNSColor(clMark), rng);
       end;
       Inc(iPosLine);
     end;
@@ -5575,7 +5581,7 @@ begin
         rng.location := iPos + iPosLine - 1;
         rng.length := 1;
         TCocoaTextView(NSScrollView(dbText.Handle).documentView).
-          setTextColor_range(ColorToNSColor(clMarker), rng);
+          setTextColor_range(ColorToNSColor(clMark), rng);
       end;
       Inc(iPosLine);
     end;
@@ -5591,7 +5597,7 @@ begin
         rng.location := iPos;
         rng.length := iPosLine;
         TCocoaTextView(NSScrollView(dbText.Handle).documentView).
-          setTextColor_range(ColorToNSColor(clMarker), rng);
+          setTextColor_range(ColorToNSColor(clTitle), rng);
       end;
     end;
     iPosLine := 1;
@@ -5602,7 +5608,7 @@ begin
         rng.location := iPos + iPosLine - 1;
         rng.length := 1;
         TCocoaTextView(NSScrollView(dbText.Handle).documentView).
-          setTextColor_range(ColorToNSColor(clMarker), rng);
+          setTextColor_range(ColorToNSColor(clMark), rng);
       end;
       Inc(iPosLine);
     end;
@@ -5615,7 +5621,7 @@ begin
         rng.location := iPos + iPosLine - 1;
         rng.length := 1;
         TCocoaTextView(NSScrollView(dbText.Handle).documentView).
-          setTextColor_range(ColorToNSColor(clMarker), rng);
+          setTextColor_range(ColorToNSColor(clTitle), rng);
       end;
       Inc(iPosLine);
     end;
@@ -5628,7 +5634,7 @@ begin
         rng.location := iPos + iPosLine - 1;
         rng.length := 1;
         TCocoaTextView(NSScrollView(dbText.Handle).documentView).
-          setTextColor_range(ColorToNSColor(clMarker), rng);
+          setTextColor_range(ColorToNSColor(clTitle), rng);
       end;
       Inc(iPosLine);
     end;
@@ -5639,15 +5645,15 @@ begin
         rng.location := iPos + iPosLine - 1;
         rng.length := 1;
         TCocoaTextView(NSScrollView(dbText.Handle).documentView).
-          setTextColor_range(ColorToNSColor(clMarker), rng);
+          setTextColor_range(ColorToNSColor(clMark), rng);
         rng.location := iPos + iPosLine;
         rng.length := 1;
         TCocoaTextView(NSScrollView(dbText.Handle).documentView).
-          setTextColor_range(ColorToNSColor(clMarker), rng);
+          setTextColor_range(ColorToNSColor(clMark), rng);
         rng.location := iPos + iPosLine + 1;
         rng.length := 1;
         TCocoaTextView(NSScrollView(dbText.Handle).documentView).
-          setTextColor_range(ColorToNSColor(clMarker), rng);
+          setTextColor_range(ColorToNSColor(clMark), rng);
       end;
     end;
     par := GetWritePara(TCocoaTextView(NSScrollView(dbText.Handle).

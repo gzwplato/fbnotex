@@ -24,8 +24,8 @@
       <UseVersionInfo Value="True"/>
       <MajorVersionNr Value="1"/>
       <MinorVersionNr Value="2"/>
-      <RevisionNr Value="5"/>
-      <StringTable Comments="fbNotex, a free software to manage many notes" LegalCopyright="Massimo Nardello, Modena 2020" LegalTrademarks="Massimo Nardello, Modena 2020" ProductName="fbNotex" ProductVersion="1.2.5.0"/>
+      <RevisionNr Value="6"/>
+      <StringTable Comments="fbNotex, a free software to manage many notes" LegalCopyright="Massimo Nardello, Modena 2020" LegalTrademarks="Massimo Nardello, Modena 2020" ProductName="fbNotex" ProductVersion="1.2.6.0"/>
     </VersionInfo>
     <BuildModes Count="1">
       <Item1 Name="Default" Default="True"/>

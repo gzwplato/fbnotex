@@ -18,7 +18,7 @@ object fmOptions: TfmOptions
     Left = 43
     Height = 20
     Top = 48
-    Width = 509
+    Width = 218
     ItemHeight = 26
     OnChange = cbStFontsChange
     Style = csDropDownList
@@ -33,7 +33,7 @@ object fmOptions: TfmOptions
     NumbersOnly = True
     OnChange = edStSizeChange
     ReadOnly = True
-    TabOrder = 1
+    TabOrder = 2
     Text = '12'
   end
   object lbStSize: TLabel
@@ -45,7 +45,7 @@ object fmOptions: TfmOptions
     ParentColor = False
   end
   object bnStFontColorMod: TButton
-    Left = 336
+    Left = 45
     Height = 36
     Top = 144
     Width = 216
@@ -127,7 +127,7 @@ object fmOptions: TfmOptions
     NumbersOnly = True
     OnChange = edStSizeTitlesChange
     ReadOnly = True
-    TabOrder = 4
+    TabOrder = 5
     Text = '10'
   end
   object lbStSizeTitles: TLabel
@@ -194,7 +194,7 @@ object fmOptions: TfmOptions
     Width = 24
     Caption = '+'
     OnClick = edStSizePlusClick
-    TabOrder = 2
+    TabOrder = 3
   end
   object edStSizeLess: TButton
     Left = 131
@@ -203,7 +203,7 @@ object fmOptions: TfmOptions
     Width = 24
     Caption = '-'
     OnClick = edStSizeLessClick
-    TabOrder = 3
+    TabOrder = 4
   end
   object edStSizeTitlesPlus: TButton
     Left = 396
@@ -212,7 +212,7 @@ object fmOptions: TfmOptions
     Width = 24
     Caption = '+'
     OnClick = edStSizeTitlesPlusClick
-    TabOrder = 5
+    TabOrder = 6
   end
   object edStSizeTitlesLess: TButton
     Left = 424
@@ -221,33 +221,33 @@ object fmOptions: TfmOptions
     Width = 24
     Caption = '-'
     OnClick = edStSizeTitlesLessClick
-    TabOrder = 6
+    TabOrder = 7
   end
-  object bnStMarkColorMod: TButton
+  object bnStFontTitleColorMod: TButton
     Left = 336
     Height = 36
     Top = 176
     Width = 216
-    Caption = 'Headings and markers color'
-    OnClick = bnStMarkColorModClick
+    Caption = 'Titles, lists and links color'
+    OnClick = bnStFontTitleColorModClick
     TabOrder = 10
   end
   object bnStFontColorDef: TButton
-    Left = 43
+    Left = 334
     Height = 36
-    Top = 144
+    Top = 40
     Width = 218
     Caption = 'Default colors'
     OnClick = bnStFontColorDefClick
-    TabOrder = 7
+    TabOrder = 1
   end
-  object bnStFontColorDef1: TButton
+  object bnStFontHighColorMod: TButton
     Left = 43
     Height = 36
     Top = 176
     Width = 218
     Caption = 'Highlight color'
-    OnClick = bnStFontColorDef1Click
+    OnClick = bnStFontHighColorModClick
     TabOrder = 9
   end
   object lbStMaxChar: TLabel
@@ -326,6 +326,15 @@ object fmOptions: TfmOptions
     Width = 113
     Caption = 'Paragraph spacing'
     ParentColor = False
+  end
+  object bnStFontMarkMod: TButton
+    Left = 336
+    Height = 36
+    Top = 144
+    Width = 216
+    Caption = 'Markers color'
+    OnClick = bnStFontMarkModClick
+    TabOrder = 23
   end
   object cdColorDialog: TColorDialog
     Title = 'Select a color'

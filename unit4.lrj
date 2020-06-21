@@ -24,14 +24,15 @@
 {"hash":45,"name":"tfmoptions.edstsizeless.caption","sourcebytes":[45],"value":"-"},
 {"hash":43,"name":"tfmoptions.edstsizetitlesplus.caption","sourcebytes":[43],"value":"+"},
 {"hash":45,"name":"tfmoptions.edstsizetitlesless.caption","sourcebytes":[45],"value":"-"},
-{"hash":151001474,"name":"tfmoptions.bnstmarkcolormod.caption","sourcebytes":[72,101,97,100,105,110,103,115,32,97,110,100,32,109,97,114,107,101,114,115,32,99,111,108,111,114],"value":"Headings and markers color"},
+{"hash":93108770,"name":"tfmoptions.bnstfonttitlecolormod.caption","sourcebytes":[84,105,116,108,101,115,44,32,108,105,115,116,115,32,97,110,100,32,108,105,110,107,115,32,99,111,108,111,114],"value":"Titles, lists and links color"},
 {"hash":225374547,"name":"tfmoptions.bnstfontcolordef.caption","sourcebytes":[68,101,102,97,117,108,116,32,99,111,108,111,114,115],"value":"Default colors"},
-{"hash":194835042,"name":"tfmoptions.bnstfontcolordef1.caption","sourcebytes":[72,105,103,104,108,105,103,104,116,32,99,111,108,111,114],"value":"Highlight color"},
+{"hash":194835042,"name":"tfmoptions.bnstfonthighcolormod.caption","sourcebytes":[72,105,103,104,108,105,103,104,116,32,99,111,108,111,114],"value":"Highlight color"},
 {"hash":138675165,"name":"tfmoptions.lbstmaxchar.caption","sourcebytes":[83,105,109,112,108,101,32,116,101,120,116,32,102,114,111,109],"value":"Simple text from"},
 {"hash":54735664,"name":"tfmoptions.edstmaxchar.text","sourcebytes":[49,48,48,48,48,48],"value":"100000"},
 {"hash":43,"name":"tfmoptions.edstmaxplus.caption","sourcebytes":[43],"value":"+"},
 {"hash":45,"name":"tfmoptions.edstmaxless.caption","sourcebytes":[45],"value":"-"},
 {"hash":257415479,"name":"tfmoptions.lblinespacing.caption","sourcebytes":[76,105,110,101,32,115,112,97,99,105,110,103],"value":"Line spacing"},
 {"hash":79265351,"name":"tfmoptions.lbparaspacing.caption","sourcebytes":[80,97,114,97,103,114,97,112,104,32,115,112,97,99,105,110,103],"value":"Paragraph spacing"},
+{"hash":115433378,"name":"tfmoptions.bnstfontmarkmod.caption","sourcebytes":[77,97,114,107,101,114,115,32,99,111,108,111,114],"value":"Markers color"},
 {"hash":256115346,"name":"tfmoptions.cdcolordialog.title","sourcebytes":[83,101,108,101,99,116,32,97,32,99,111,108,111,114],"value":"Select a color"}
 ]}
